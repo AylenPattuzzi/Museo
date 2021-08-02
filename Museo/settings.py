@@ -80,7 +80,7 @@ DATABASES = {
         'NAME': 'Museo-DSI',
         'USER': 'django',
         'PASSWORD': 'disenio',
-        'HOST': 'localhost',
+        'HOST': '190.191.211.178',
         'PORT': '5432',
     }
 }
