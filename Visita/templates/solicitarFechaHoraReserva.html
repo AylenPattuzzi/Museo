@@ -1,0 +1,34 @@
+{% extends "base.html"%}
+{% block content %}
+    <form action="../tomarFechaHoraReserva/" method="POST">
+        {% csrf_token %}
+        <!-- datos viejos -->
+        <label for="escuelaSeleccionada">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
+        <br>
+        <label for="cantVisitantes">Cantidad de visitantes: </label><input type="text" name="cantVisitantes" readonly="true" value="{{cantVisitantes}}">
+        <br>
+        <label for="sedeSeleccionada">Sede: </label><input type="text" name="sedeSeleccionada" readonly="true" value="{{sedeSeleccionada}}">
+        <br>
+        <label for="tipoVisitaSeleccionada">Tipo Visita: </label><input type="text" name="tipoVisitaSeleccionada" readonly="true" value="{{tipoVisitaSeleccionada}}">
+        <br>
+        <table>
+            <thead>
+                <th></th>
+                <th>Nombre</th>
+            </thead>
+            <tbody>
+                {% for expo in exposicionSeleccionada %}
+                <tr>
+                    <td><input type="hidden" name="exposicionSeleccionada[]" value="{{expo}}" onclick="return false;" checked></td>
+                    <td>{{expo}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <!-- nuevos datos -->
+        <input type="datetime-local" name="fechaYHoraReserva" required>
+    
+        <input type="submit" value="Seleccionar">
+    </form>
+{% endblock content %}

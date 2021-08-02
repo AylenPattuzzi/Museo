@@ -1,0 +1,33 @@
+{% extends "base.html"%}
+{% block content %}
+    <form action="../tomarSeleccionExposicion/" method="POST">
+        {% csrf_token %}
+        <!-- datos viejos -->
+        <label for="escuelaSeleccionada">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
+        <br>
+        <label for="cantVisitantes">Cantidad de visitantes: </label><input type="text" name="cantVisitantes" readonly="true" value="{{cantVisitantes}}">
+        <br>
+        <label for="sedeSeleccionada">Sede: </label><input type="text" name="sedeSeleccionada" readonly="true" value="{{sedeSeleccionada}}">
+        <br>
+        <label for="tipoVisitaSeleccionada">Tipo Visita: </label><input type="text" name="tipoVisitaSeleccionada" readonly="true" value="{{tipoVisitaSeleccionada}}">
+        <br>
+        <!-- nuevos datos -->
+        <table>
+            <thead>
+                <th>Seleccionar</th>
+                <th>Exposición</th>
+            </thead>
+            <tbody>
+
+                {% for expo in expTempVigentes %}
+                <tr>
+                    <td><input type="checkbox" name="exposicionSeleccionada[]" value="{{expo}}"></td>
+                    <td>{{expo}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    
+        <input type="submit" value="Seleccionar">
+    </form>
+{% endblock content %}

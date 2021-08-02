@@ -1,0 +1,19 @@
+{% extends "base.html"%}
+{% block content %}
+    <form action="../tomarSeleccionSede/" method="POST">
+        {% csrf_token %}
+        <!-- datos viejos -->
+        <label for="escuelaSeleccionada">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
+        <br>
+        <label for="cantVisitantes">Ingrese la cantidad de visitantes: </label><input type="text" name="cantVisitantes" readonly="true" value="{{cantVisitantes}}">
+        <br>
+        <!-- nuevos datos -->
+        <select name="sedeSeleccionada" required>
+            {% for sede in nombreSede %}
+            <option value="{{sede}}">{{sede}}</option>
+            {% endfor %}
+        </select>
+    
+        <input type="submit" value="Seleccionar">
+    </form>
+{% endblock content %}

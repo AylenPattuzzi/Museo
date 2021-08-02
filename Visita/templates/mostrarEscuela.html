@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+    <form action="../tomarSeleccionEscuela/" method="POST">
+        {% csrf_token %}
+        <select name="escuelaSeleccionada" required>
+            {% for escuela in nombreEscuelas %}
+            <option value="{{escuela}}">{{escuela}}</option>
+            {% endfor %}
+        </select>
+    
+        <input type="submit" value="Seleccionar">
+    </form>
+
+{% endblock content %}

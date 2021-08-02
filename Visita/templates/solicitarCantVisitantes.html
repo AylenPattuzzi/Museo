@@ -1,0 +1,13 @@
+{% extends "base.html"%}
+{% block content %}
+    <form action="../tomarCantVisitantes/" method="POST">
+        {% csrf_token %}
+        <!-- datos viejos -->
+        <label for="escuelaSeleccionada">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
+        <br>
+        <!-- nuevos datos -->
+        <label for="cantVisitantes">Ingrese la cantidad de visitantes: </label><input type="number" name="cantVisitantes" required>
+    
+        <input type="submit" value="Enviar">
+    </form>
+{% endblock content %}
