@@ -2,6 +2,9 @@
 {% block content %}
     <form action="../tomarSeleccionEscuela/" method="POST">
         {% csrf_token %}
+        <label for="responsableLogueado">Responsable logueado: </label><input type="text" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
+        <br>
+        <label for="escuelaSeleccionada">Escuela:</label>
         <select name="escuelaSeleccionada" required>
             {% for escuela in nombreEscuelas %}
             <option value="{{escuela}}">{{escuela}}</option>

@@ -1,6 +1,6 @@
 {% extends "base.html"%}
 {% block content %}
-    <form action="../tomarSeleccionGuias/" method="POST">
+    <form action="../tomarConfirmacion/" method="POST">
         {% csrf_token %}
         <!-- datos viejos -->
         <label for="responsableLogueado">Responsable logueado: </label><input type="text" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
@@ -21,7 +21,7 @@
             <tbody>
                 {% for expo in exposicionSeleccionada %}
                 <tr>
-                    <td><input type="hidden" name="exposicionSeleccionada[]" value="{{expo}}" onclick="return false;" checked></td>
+                    <td><input type="hidden" name="exposicionSeleccionada[]" value="{{expo}}" checked></td>
                     <td>{{expo}}</td>
                 </tr>
                 {% endfor %}
@@ -37,24 +37,22 @@
         <br>
         <label for="cantGuias">Guias Necesarios: </label><input type="text" name="cantGuias" readonly="true" value="{{cantGuias}}">
         <br>
-        <!-- nuevos datos -->
         <table>
             <thead>
-                <th>Seleccionar</th>
+                <th></th>
                 <th>Guías</th>
             </thead>
             <tbody>
-
-                {% for guia in guiasDisponibles %}
+                {% for guia in guiasSeleccionados %}
                 <tr>
-                    <td><input type="checkbox" name="guiasSeleccionados[]" value="{{guia}}"></td>
+                    <td><input type="hidden" name="guiasSeleccionados[]" value="{{guia}}" checked></td>
                     <td>{{guia}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
       
-    
-        <input type="submit" value="Seleccionar">
+        <p>¿Confirma los datos?</p>
+        <input type="submit" value="Confirmar">
     </form>
 {% endblock content %}

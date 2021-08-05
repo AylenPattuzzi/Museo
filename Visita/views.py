@@ -1,13 +1,17 @@
 from Visita.models import Exposicion, TipoVisita
 from django.shortcuts import render
-from .models import Sesion, Escuela, Sede, Tarifa, ReservaVisita
+from .models import Estado, Sesion, Escuela, Sede, Tarifa, ReservaVisita
+from datetime import datetime
+from django.utils.dateparse import parse_datetime
+import math
 
 # Create your views here.
+def index(request):
+    return render(request,"index.html", {})
 
 
 def nuevaReserva(request):
-    #responsableLogueado = obtenerResponsableLogueado()
-    responsableLogueado = "aylen"
+    responsableLogueado = obtenerResponsableLogueado(int(request.POST.get('sesion')))
     nombreEscuelas = buscarEscuela()
     
     context = {
@@ -16,8 +20,8 @@ def nuevaReserva(request):
     }
     return render(request,"mostrarEscuela.html", context) #mostrar y solicitar selección de escuela
 
-def obtenerResponsableLogueado():
-    sesionActiva = Sesion.objects.get(pk=1)  #PENDIENTE
+def obtenerResponsableLogueado(sesion):
+    sesionActiva = Sesion.objects.get(pk=sesion)
     responsableLogueado = sesionActiva.mostrarResponsable()
     return responsableLogueado
 
@@ -30,10 +34,13 @@ def buscarEscuela():
 #---------------------------------------------
 
 def tomarSeleccionEscuela(request):
-    #tomar datos del usuario:
+    # Datos viejos
+    responsableLogueado = request.POST.get('responsableLogueado')
+    # tomar datos del usuario:
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
     
     context = {
+        'responsableLogueado': responsableLogueado,
         'escuelaSeleccionada': escuelaSeleccionada,
     }
     return render(request,"solicitarCantVisitantes.html", context)
@@ -43,13 +50,17 @@ def tomarSeleccionEscuela(request):
 def tomarCantVisitantes(request):
     #datos previos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
+    responsableLogueado = request.POST.get('responsableLogueado')
+
     #tomar datos del usuario:
     cantVisitantes = request.POST.get('cantVisitantes')
 
     nombreSede = buscarSede()
+
     context = {
         'nombreSede': nombreSede,
         'escuelaSeleccionada': escuelaSeleccionada,
+        'responsableLogueado': responsableLogueado,
         'cantVisitantes': cantVisitantes,
     }
     return render(request,"mostrarSede.html", context) #mostrar pantalla mostrarSede
@@ -66,11 +77,13 @@ def tomarSeleccionSede(request):
     #datos previos:
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
     cantVisitantes = request.POST.get('cantVisitantes')
+    responsableLogueado = request.POST.get('responsableLogueado')
     #tomar datos del usuario:
     sedeSeleccionada = request.POST.get('sedeSeleccionada')
 
     tipoVisita = buscarTipoVisita()
     context = {
+        'responsableLogueado': responsableLogueado,
         'tipoVisita': tipoVisita,
         'escuelaSeleccionada': escuelaSeleccionada,
         'cantVisitantes': cantVisitantes,
@@ -88,11 +101,12 @@ def buscarTipoVisita():
 def tomarSeleccionTipoVisita(request):
     #datos previos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
+    responsableLogueado = request.POST.get('responsableLogueado')
     cantVisitantes = request.POST.get('cantVisitantes')
     sedeSeleccionada = request.POST.get('sedeSeleccionada')
     # tomar datos del usuario
     tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
-    
+
     # mapear objeto sede
     sede = Sede.objects.get(nombre=sedeSeleccionada)
 
@@ -100,6 +114,7 @@ def tomarSeleccionTipoVisita(request):
         #Selecciona "por exposición" (flujo básico)
         expTempVigentes = buscarExpTempVigentes(sede)
         context = {
+            'responsableLogueado': responsableLogueado,
             'escuelaSeleccionada': escuelaSeleccionada,
             'cantVisitantes': cantVisitantes,
             'sedeSeleccionada': sedeSeleccionada,
@@ -112,6 +127,7 @@ def tomarSeleccionTipoVisita(request):
         #TODO
         expTempVigentes = buscarExpTempVigentes(sede)
         context = {
+            'responsableLogueado': responsableLogueado,
             'escuelaSeleccionada': escuelaSeleccionada,
             'cantVisitantes': cantVisitantes,
             'sedeSeleccionada': sedeSeleccionada,
@@ -127,6 +143,7 @@ def buscarExpTempVigentes(sede):
 def tomarSeleccionExposicion(request):
     # datos viejos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
+    responsableLogueado = request.POST.get('responsableLogueado')
     cantVisitantes = request.POST.get('cantVisitantes')
     sedeSeleccionada = request.POST.get('sedeSeleccionada')
     tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
@@ -135,6 +152,7 @@ def tomarSeleccionExposicion(request):
     print(exposicionSeleccionada)
 
     context = {
+        'responsableLogueado': responsableLogueado,
         'escuelaSeleccionada': escuelaSeleccionada,
         'cantVisitantes': cantVisitantes,
         'sedeSeleccionada': sedeSeleccionada,
@@ -147,13 +165,15 @@ def tomarSeleccionExposicion(request):
 def tomarFechaHoraReserva(request):
     # datos viejos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
-    cantVisitantes = request.POST.get('cantVisitantes')
+    responsableLogueado = request.POST.get('responsableLogueado')
+    cantVisitantes = int(request.POST.get('cantVisitantes'))
     sedeSeleccionada = request.POST.get('sedeSeleccionada')
     tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
     listaExposicionesSelec = request.POST.getlist('exposicionSeleccionada[]')
     
     # tomar datos del usuario
     fechaYHoraReserva = request.POST.get('fechaYHoraReserva')
+    fechaYHoraReservaParse = parse_datetime(fechaYHoraReserva)
 
     # mapear objeto sede
     sede = Sede.objects.get(nombre=sedeSeleccionada)
@@ -165,9 +185,27 @@ def tomarFechaHoraReserva(request):
 
     duracionReserva = calcularDuracionReserva(tipoVisitaSeleccionada, exposicionSeleccionada, sede)
 
-    #for reserva in ReservaVisita:
-        
+    if not verificarCapacidad(sede, cantVisitantes):
+        context = {
+            'responsableLogueado': responsableLogueado,
+            'escuelaSeleccionada': escuelaSeleccionada,
+            'cantVisitantes': cantVisitantes,
+            'sedeSeleccionada': sedeSeleccionada,
+            'tipoVisitaSeleccionada':tipoVisitaSeleccionada,
+            'exposicionSeleccionada':listaExposicionesSelec,
+            'fechaYHoraReserva':fechaYHoraReserva,
+            'duracionReserva': duracionReserva,
+            'error': "La sede no tiene capacidad para esa cantidad de alumnos en la fecha seleccionada",
+        }
+        return render(request,"solicitarFechaHoraReserva.html",context)
+    dia = 'Lunes' #TODO
+    horarioInicio = fechaYHoraReservaParse.time()
+    horarioFin = (fechaYHoraReservaParse + duracionReserva).time()
+    guiasDisponibles = buscarGuiasDisponibles(sede, dia, horarioInicio, horarioFin)
+    cantGuias = calcularCantGuiasNecesarios(sede, cantVisitantes)
+    
     context = {
+        'responsableLogueado': responsableLogueado,
         'escuelaSeleccionada': escuelaSeleccionada,
         'cantVisitantes': cantVisitantes,
         'sedeSeleccionada': sedeSeleccionada,
@@ -175,6 +213,10 @@ def tomarFechaHoraReserva(request):
         'exposicionSeleccionada':listaExposicionesSelec,
         'fechaYHoraReserva':fechaYHoraReserva,
         'duracionReserva': duracionReserva,
+        'guiasDisponibles': guiasDisponibles,
+        'cantGuias': cantGuias,
+        'horarioInicio': horarioInicio,
+        'horarioFin': horarioFin,
     }
     return render(request,"mostrarGuiasDisponibles.html", context)
 
@@ -182,77 +224,85 @@ def calcularDuracionReserva(tipoVisitaSeleccionada, exposicionSeleccionada, sede
     duracionReserva = sede.calcularDuracionDeExposicionesSeleccionadas(tipoVisitaSeleccionada, exposicionSeleccionada)
     return duracionReserva
 
-# incompleto
+def verificarCapacidad(sede, cantVisitantes):
+    tieneCapacidad = sede.verificarCapacidad(cantVisitantes)
+    return tieneCapacidad
 
+def buscarGuiasDisponibles(sede, dia, horarioInicio, horarioFin):
+    guiasDisponibles = sede.buscarGuiasDisponibles(dia, horarioInicio, horarioFin)
+    return guiasDisponibles
 
-def buscarEstadoParaAsignar(request):
-    context = {}
-    return render(request,"base.html", context)
+def calcularCantGuiasNecesarios(sede, cantVisitantes):
+    guiasNecesarios = math.ceil(cantVisitantes / sede.getCantMaxPorGuia())
+    return guiasNecesarios
 
+#---------------------------------------------
 
-def buscarGuiasDisponibles(request):
-    context = {}
-    return render(request,"base.html", context)
+def tomarSeleccionGuias(request):
+    # datos viejos
+    escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
+    responsableLogueado = request.POST.get('responsableLogueado')
+    cantVisitantes = request.POST.get('cantVisitantes')
+    sedeSeleccionada = request.POST.get('sedeSeleccionada')
+    tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
+    listaExposicionesSelec = request.POST.getlist('exposicionSeleccionada[]')
+    fechaYHoraReserva = request.POST.get('fechaYHoraReserva')
+    duracionReserva = request.POST.get('duracionReserva')
+    cantGuias = request.POST.get('cantGuias')
+    horarioInicio = request.POST.get('horarioInicio')
+    horarioFin = request.POST.get('horarioFin')
+    
+    # tomar datos del usuario
+    guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
 
-def buscarNumeroParaAsignar(request):
-    context = {}
-    return render(request,"base.html", context)
-
-
-
-
-
-def calcularCantGuiasSegunVisitantes(request):
-    context = {}
-    return render(request,"base.html", context)
-
-def calcularCantTotalAlumnos(request):
-    context = {}
-    return render(request,"base.html", context)
-
-
-def finCu(request):
-    context = {}
-    return render(request,"base.html", context)
-
-def new(request):
-    context = {}
-    return render(request,"base.html", context)
-
-
-
-def obtenerFechaYHoraActual(request):
-    context = {}
-    return render(request,"base.html", context)
-
-
-
-
-
+    context = {
+        'responsableLogueado': responsableLogueado,
+        'escuelaSeleccionada': escuelaSeleccionada,
+        'cantVisitantes': cantVisitantes,
+        'sedeSeleccionada': sedeSeleccionada,
+        'tipoVisitaSeleccionada':tipoVisitaSeleccionada,
+        'exposicionSeleccionada':listaExposicionesSelec,
+        'fechaYHoraReserva':fechaYHoraReserva,
+        'duracionReserva': duracionReserva,
+        'cantGuias': cantGuias,
+        'horarioInicio': horarioInicio,
+        'horarioFin': horarioFin,
+        'guiasSeleccionados':guiasSeleccionados,
+    }
+    return render(request,"solicitarConfirmacion.html", context)
+#-------------------------------
 def tomarConfirmacion(request):
-    context = {}
-    return render(request,"base.html", context)
+    # datos viejos
+    escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
+    responsableLogueado = request.POST.get('responsableLogueado')
+    cantVisitantes = request.POST.get('cantVisitantes')
+    sedeSeleccionada = request.POST.get('sedeSeleccionada')
+    tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
+    listaExposicionesSelec = request.POST.getlist('exposicionSeleccionada[]')
+    fechaYHoraReserva = request.POST.get('fechaYHoraReserva')
+    duracionReserva = request.POST.get('duracionReserva')
+    cantGuias = request.POST.get('cantGuias')
+    horarioInicio = request.POST.get('horarioInicio')
+    horarioFin = request.POST.get('horarioFin')
+    guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
 
+    ReservaVisita.objects.create()
+    context = {
+        
+    }
+    return render(request,"finCU.html", context) 
 
+def buscarEstadoParaAsignar(): #TODO cambiar nombre
+    for estado in Estado.objects.all():
+        if estado.esPendienteDeConfirmacion():
+            return estado
 
+def buscarNumeroParaAsignar(reservaVisita):
+    numeroParaAsignar = reservaVisita.getNumeroReserva()
+    return numeroParaAsignar
 
+def obtenerFechaYHoraActual():
+    return datetime.now()
+#TODO mirar
 
-
-
-def tomarSeleccionGuia(request):
-    context = {}
-    return render(request,"base.html", context)
-
-
-
-
-
-def verificarCantMaxVisitantes(request):
-    context = {}
-    return render(request,"base.html", context)
-
-def verificarCapacidad(total,max):
-    if total <= max:
-        return True
-    else:
-        return False
+#------------------------------------------------

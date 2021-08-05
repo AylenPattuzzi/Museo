@@ -3,6 +3,8 @@
     <form action="../tomarCantVisitantes/" method="POST">
         {% csrf_token %}
         <!-- datos viejos -->
+        <label for="responsableLogueado">Responsable logueado: </label><input type="text" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
+        <br>
         <label for="escuelaSeleccionada">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
         <br>
         <!-- nuevos datos -->

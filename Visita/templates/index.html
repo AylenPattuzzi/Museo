@@ -1,0 +1,8 @@
+{% extends "base.html"%}
+{% block content %}
+<form action="../nuevaReserva/" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="sesion" value="1">
+    <input type="submit" value="Entrar como Aylen">
+</form>
+{% endblock content %}

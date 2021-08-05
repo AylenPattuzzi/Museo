@@ -21,14 +21,14 @@ class HorarioEmpleado(models.Model):
                 break
         if not esMiDia:
             return False #no es mi dia
-        if self.horaIngreso <= horarioInicio and self.horaSalida > horarioFin:
+        if self.getHoraIngreso(self) <= horarioInicio and self.getHoraSalida() > horarioFin:
             return True # es mi dia y horario
         else:
             return False #es mi dia pero no mi horario
 
-    def getHoraFin(self):
+    def getHoraSalida(self):
         return self.horaSalida
-    def getHoraInicio(self):
+    def getHoraIngreso(self):
         return self.horaIngreso
 
 class Escuela(models.Model):
@@ -45,13 +45,17 @@ class AsignacionVisita(models.Model):
     fechaHoraInicio = models.DateTimeField()
     guiaAsignado = models.ForeignKey("Empleado", on_delete=models.CASCADE) 
     #def tieneAsignadoVisitas(self):
-    def esAsignadoEnHorario(self, horarioInicio, horarioFin):
+    def esAsignadoEnHorario(self, empleado, horarioInicio, horarioFin):
+        if not self.guiaAsignado == empleado:
+            return False
         if self.fechaHoraInicio <= horarioInicio and self.fechaHoraFin > horarioInicio:
             return True
         elif self.fechaHoraInicio < horarioFin and self.fechaHoraFin >= horarioFin:
             return True
         else:
             return False
+    def new():
+        return 
 
 class TipoExposicion(models.Model):
     descripcion = models.CharField(max_length=50, blank=True, null=True)
@@ -75,6 +79,8 @@ class CambioEstado(models.Model):
     estado = models.ForeignKey("Estado", on_delete=models.CASCADE)
     def setEstado(self, estado):
         self.estado = estado
+    def new():
+        return 
 
 class Estado(models.Model):
     ambito = models.CharField(max_length=15)
@@ -197,6 +203,48 @@ class Tarifa(models.Model):
     def obtenerTipoVisita(self):
         return self.tipoVisita.mostrarNombre()
 
+
+class Empleado(models.Model):
+    apellido = models.CharField(max_length= 15)
+    codigoValidacion = models.IntegerField(blank=True, null=True)
+    cuit = models.BigIntegerField(blank=True, null=True)
+    dni = models.IntegerField(blank=True, null=True)
+    domicilio = models.CharField(max_length= 50, blank=True, null=True)
+    fechaIngreso = models.DateField(blank=True, null=True)
+    fechaNacimiento = models.DateField(blank=True, null=True)
+    mail =  models.CharField(max_length= 50, blank=True, null=True)
+    nombre = models.CharField(max_length= 15)
+    sexo = models.CharField(max_length= 12, blank=True, null=True)
+    telefono = models.BigIntegerField(blank=True, null=True)
+    cargo = models.ForeignKey(Cargo, on_delete=models.CASCADE, blank=True, null=True)
+    horarioEmpleado = models.ManyToManyField(HorarioEmpleado, blank=True)
+    sedeDondeTrabaja = models.ForeignKey("Sede", on_delete=models.CASCADE, blank=True, null=True)
+    def getNombre(self):
+        return self.nombre + ' ' + self.apellido
+    def tieneAsignacionesEnHorario(self, dia, horarioInicio, horarioFin):
+        
+        if not self.cargo.esGuia():
+           return None # significa que no es un guia
+        
+        trabajaEnHorario = False # bandera
+
+        for horario in self.horarioEmpleado.all(): #loop horarios empleado
+            
+            #horario.obtenerJornadaLaboral() rompe el patron "lo hace quien conoce"
+            
+            if horario.trabajaEnHorario(dia, horarioInicio, horarioFin): #dejo que "quien conoce" haga el cálculo
+                trabajaEnHorario = True 
+                break
+        
+        if not trabajaEnHorario:
+            return None # significa que no trabaja en ese horario
+        
+        for asignacion in AsignacionVisita.objects.all(): #TODO
+            if asignacion.esAsignadoEnHorario(self, horarioInicio, horarioFin): #respeta el patron "lo hace quien conoce"
+                return True # significa que ya está asignado (ocupado)
+
+        return False #significa que no fue asignado, pero si trabaja en el horario solicitado. (libre)
+
 class Sede(models.Model):
     cantMaximaVisitantes = models.IntegerField()
     cantMaxPorGuia = models.IntegerField()
@@ -218,57 +266,32 @@ class Sede(models.Model):
         return duracion
     def getCantMaximaVisitantes(self):
         return self.cantMaximaVisitantes 
+
     def buscarGuiasDisponibles(self, dia, horarioInicio, horarioFin):
-        return self.exposicion.buscarGuiasDisponibles(dia, horarioInicio, horarioFin)
+        empleados = []
+        for empleado in Empleado.objects.filter(sedeDondeTrabaja = self):
+            if not empleado.tieneAsignacionesEnHorario(dia, horarioInicio, horarioFin):
+                empleados.append(empleado.getNombre())
+        return empleados
+
     def getCantMaxPorGuia(self):
         return self.cantMaxPorGuia
-
-class Empleado(models.Model):
-    apellido = models.CharField(max_length= 15)
-    codigoValidacion = models.IntegerField(blank=True, null=True)
-    cuit = models.BigIntegerField(blank=True, null=True)
-    dni = models.IntegerField(blank=True, null=True)
-    domicilio = models.CharField(max_length= 50, blank=True, null=True)
-    fechaIngreso = models.DateField(blank=True, null=True)
-    fechaNacimiento = models.DateField(blank=True, null=True)
-    mail =  models.CharField(max_length= 50, blank=True, null=True)
-    nombre = models.CharField(max_length= 15)
-    sexo = models.CharField(max_length= 12, blank=True, null=True)
-    telefono = models.BigIntegerField(blank=True, null=True)
-    cargo = models.ForeignKey(Cargo, on_delete=models.CASCADE, blank=True, null=True)
-    horarioEmpleado = models.ManyToManyField(HorarioEmpleado, blank=True)
-    sedeDondeTrabaja = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
-    def getNombre(self):
-        return self.nombre
-    def tieneAsignacionesEnHorario(self, dia, horarioInicio, horarioFin):
-        
-        if not self.cargo.esGuia():
-           return None # significa que no es un guia
-        
-        trabajaEnHorario = False # bandera
-
-        for horario in self.horarioEmpleado.all(): #loop horarios empleado
-            
-            #horario.obtenerJornadaLaboral() rompe el patron "lo hace quien conoce"
-            
-            if horario.trabajaEnHorario(dia, horarioInicio, horarioFin): #dejo que "quien conoce" haga el cálculo
-                trabajaEnHorario = True 
-                break
-        
-        if not trabajaEnHorario:
-            return None # significa que no trabaja en ese horario
-        
-        for asignacion in AsignacionVisita.objects.all():
-            if asignacion.guiaAsignado == self:
-                if asignacion.esAsignadoEnHorario(horarioInicio, horarioFin): #respeta el patron "lo hace quien conoce"
-                    return True # significa que ya está asignado
-
-        return False #significa que no fue asignado, pero si trabaja en el horario solicitado.
+    
+    def getCantVisitantesFechaHora(self):
+        #TODO
+        return 0
+    def verificarCapacidad(self, cantVisitantesNuevos):
+        cantVisitantes = self.getCantVisitantesFechaHora()
+        cantMaxVisitantes = self.getCantMaximaVisitantes()
+        if cantVisitantesNuevos + cantVisitantes > cantMaxVisitantes:
+            return False
+        else:
+            return True
 
 class ReservaVisita(models.Model):
     cantidadAlumnos = models.IntegerField(blank=True, null=True)
     cantidadAlumnosConfirmada = models. IntegerField(blank=True, null=True)
-    duracionExtendida = models. DurationField(blank=True, null=True)
+    duracionEstimada = models. DurationField(blank=True, null=True)
     fechaHoraCreacion = models.DateTimeField(blank=True, null=True)
     fechaHoraReserva = models.DateTimeField(blank=True, null=True)
     horaFinReal = models.TimeField(blank=True, null=True)
@@ -287,5 +310,8 @@ class ReservaVisita(models.Model):
     def getNumeroReserva(self):
         return self.numeroReserva
     def crearCambioEstado(self):
-        #ToDo
+        #TODO
         return
+    
+    def new():
+        return 
