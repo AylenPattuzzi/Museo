@@ -1,36 +1,52 @@
 {% extends "base.html"%}
 {% block content %}
-    <form action="../tomarFechaHoraReserva/" method="POST">
-        {% csrf_token %}
-        <!-- datos viejos -->
-        <label for="responsableLogueado">Responsable logueado: </label><input type="text" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
-        <br>
-        <label for="escuelaSeleccionada">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
-        <br>
-        <label for="cantVisitantes">Cantidad de visitantes: </label><input type="text" name="cantVisitantes" readonly="true" value="{{cantVisitantes}}">
-        <br>
-        <label for="sedeSeleccionada">Sede: </label><input type="text" name="sedeSeleccionada" readonly="true" value="{{sedeSeleccionada}}">
-        <br>
-        <label for="tipoVisitaSeleccionada">Tipo Visita: </label><input type="text" name="tipoVisitaSeleccionada" readonly="true" value="{{tipoVisitaSeleccionada}}">
-        <br>
-        <table>
-            <thead>
-                <th></th>
-                <th>Exposición</th>
-            </thead>
-            <tbody>
-                {% for expo in exposicionSeleccionada %}
-                <tr>
-                    <td><input type="hidden" name="exposicionSeleccionada[]" value="{{expo}}" onclick="return false;" checked></td>
-                    <td>{{expo}}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <br>
-        <!-- nuevos datos -->
-        <label for="fechaYHoraReserva">Fecha y hora a reservar:</label><input type="datetime-local" name="fechaYHoraReserva" required>
-    
-        <input type="submit" value="Seleccionar">
-    </form>
+<div class="container ">
+    <div class="row">
+        <form action="../tomarFechaHoraReserva/" method="POST">
+            {% csrf_token %}
+            <!-- datos viejos -->
+            <div class="seleccionados-row">
+            <label for="responsableLogueado" class="label-readonly">Responsable logueado: </label><input class="input-readonly" type="text" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
+            <br>
+            </div>
+            <div class="seleccionados-row">
+            <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input class="input-readonly" type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
+            <br>
+            </div>
+            <div class="seleccionados-row">
+            <label for="cantVisitantes" class="label-readonly">Cantidad de visitantes: </label><input class="input-readonly" type="text" name="cantVisitantes" readonly="true" value="{{cantVisitantes}}">
+            <br>
+            </div>
+            <div class="seleccionados-row">
+            <label for="sedeSeleccionada" class="label-readonly">Sede: </label><input class="input-readonly" type="text" name="sedeSeleccionada" readonly="true" value="{{sedeSeleccionada}}">
+            <br>
+            </div>
+            <div class="seleccionados-row">
+            <label for="tipoVisitaSeleccionada" class="label-readonly">Tipo Visita: </label><input class="input-readonly" type="text" name="tipoVisitaSeleccionada" readonly="true" value="{{tipoVisitaSeleccionada}}">
+            <br>
+            </div>
+            <table class="table">
+                <thead>
+                    <th></th>
+                    <th>Exposición</th>
+                </thead>
+                <tbody>
+                    {% for expo in exposicionSeleccionada %}
+                    <tr>
+                        <td><input type="hidden" name="exposicionSeleccionada[]" value="{{expo}}" onclick="return false;" checked></td>
+                        <td>{{expo}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+            <!-- nuevos datos -->
+            <label for="fechaYHoraReserva" class="bold">Fecha y hora a reservar:</label><input class="form-control" type="datetime-local" name="fechaYHoraReserva" required>
+        
+            <div class="submit-container">
+                <input type="submit" value="Seleccionar" class="btn btn-primary mb-2 mt-3">
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock content %}

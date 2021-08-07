@@ -1,15 +1,24 @@
 {% extends "base.html"%}
 {% block content %}
+<div class="container ">
     <form action="../tomarCantVisitantes/" method="POST">
         {% csrf_token %}
         <!-- datos viejos -->
-        <label for="responsableLogueado">Responsable logueado: </label><input type="text" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
+        <div class="seleccionados-row">
+        <label for="responsableLogueado" class="label-readonly">Responsable logueado: </label><input type="text" class="input-readonly" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
         <br>
-        <label for="escuelaSeleccionada">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
+        </div>
+        <div class="seleccionados-row">
+        <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input type="text" class="input-readonly" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
         <br>
+        </div>
         <!-- nuevos datos -->
-        <label for="cantVisitantes">Ingrese la cantidad de visitantes: </label><input type="number" name="cantVisitantes" required>
+        <label for="cantVisitantes" class="bold">Ingrese la cantidad de visitantes: </label><input  class="form-control " type="number" name="cantVisitantes" required>
     
-        <input type="submit" value="Enviar">
+        <div class="submit-container">
+            <input type="submit" value="Enviar" class="btn btn-primary mb-2 mt-3">
+        </div>
     </form>
+    </div>    
+</div>
 {% endblock content %}

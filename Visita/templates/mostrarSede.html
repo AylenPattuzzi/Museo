@@ -1,22 +1,35 @@
 {% extends "base.html"%}
 {% block content %}
-    <form action="../tomarSeleccionSede/" method="POST">
-        {% csrf_token %}
-        <!-- datos viejos -->
-        <label for="responsableLogueado">Responsable logueado: </label><input type="text" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
-        <br>
-        <label for="escuelaSeleccionada">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
-        <br>
-        <label for="cantVisitantes">Ingrese la cantidad de visitantes: </label><input type="text" name="cantVisitantes" readonly="true" value="{{cantVisitantes}}">
-        <br>
-        <!-- nuevos datos -->
-        <label for="sedeSeleccionada">Sede:</label>
-        <select name="sedeSeleccionada" required>
-            {% for sede in nombreSede %}
-            <option value="{{sede}}">{{sede}}</option>
-            {% endfor %}
-        </select>
-    
-        <input type="submit" value="Seleccionar">
-    </form>
+<div class="container ">
+    <div class="row">
+        <form action="../tomarSeleccionSede/" method="POST">
+            {% csrf_token %}
+            <!-- datos viejos -->
+            <div class="seleccionados-row">
+            <label for="responsableLogueado" class="label-readonly">Responsable logueado: </label><input type="text" class="input-readonly" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
+            <br>
+            </div>
+            <div class="seleccionados-row">
+            <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input type="text" class="input-readonly" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada">
+            <br>
+            </div>
+            <div class="seleccionados-row">
+            <label for="cantVisitantes" class="label-readonly">Ingrese la cantidad de visitantes: </label><input type="text" class="input-readonly" name="cantVisitantes" readonly="true" value="{{cantVisitantes}}">
+            <br>
+            </div>
+            <!-- nuevos datos -->
+            <label for="sedeSeleccionada" class="label-readonly">Sede:</label>
+            <select name="sedeSeleccionada" class="form-select mt-2 mb-3" required>
+                {% for sede in nombreSede %}
+                <option value="{{sede}}">{{sede}}</option>
+                {% endfor %}
+            </select>
+        
+            <div class="submit-container">
+                <input type="submit" value="Seleccionar" class="btn btn-primary mb-2">
+            </div>
+        </form>
+
+    </div>    
+</div>
 {% endblock content %}

@@ -1,18 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-    <form action="../tomarSeleccionEscuela/" method="POST">
-        {% csrf_token %}
-        <label for="responsableLogueado">Responsable logueado: </label><input type="text" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
-        <br>
-        <label for="escuelaSeleccionada">Escuela:</label>
-        <select name="escuelaSeleccionada" required>
-            {% for escuela in nombreEscuelas %}
-            <option value="{{escuela}}">{{escuela}}</option>
-            {% endfor %}
-        </select>
-    
-        <input type="submit" value="Seleccionar">
-    </form>
+<div class="container ">
+    <div class="row">
+        <form action="../tomarSeleccionEscuela/" method="POST">
+            {% csrf_token %}
+            <div class="seleccionados-row">
+            <label for="responsableLogueado" class="label-readonly">Responsable logueado: </label><input type="text" class="input-readonly" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
+            <br></div>
+            <label for="escuelaSeleccionada" class="label-readonly mt-2">Escuela:</label>
+            <select name="escuelaSeleccionada" class="form-select mt-1 mb-4" required>
+                {% for escuela in nombreEscuelas %}
+                <option value="{{escuela}}">{{escuela}}</option>
+                {% endfor %}
+            </select>
+        
+            <div class="submit-container">
+                <input type="submit" value="Seleccionar" class="btn btn-primary mb-2">
+            </div>
+        </form>
+    </div>
+</div>
 
 {% endblock content %}
 
