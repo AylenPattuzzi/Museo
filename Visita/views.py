@@ -12,6 +12,8 @@ def index(request):
 
 def nuevaReserva(request):
     responsableLogueado = obtenerResponsableLogueado(int(request.POST.get('sesion')))
+    
+    
     nombreEscuelas = buscarEscuela()
     
     context = {
@@ -38,6 +40,7 @@ def tomarSeleccionEscuela(request):
     responsableLogueado = request.POST.get('responsableLogueado')
     # tomar datos del usuario:
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
+
     
     context = {
         'responsableLogueado': responsableLogueado,
@@ -94,51 +97,50 @@ def tomarSeleccionSede(request):
 def buscarTipoVisita():
     nombresTipoVisita = []
     for tarifa in Tarifa.objects.all():
-        nombresTipoVisita.append(tarifa.obtenerTipoVisita())
+        tipoVisita = tarifa.obtenerTipoVisita()
+        if not tipoVisita in nombresTipoVisita:
+            nombresTipoVisita.append(tipoVisita)
     return nombresTipoVisita
 
 #----------------------------------------
 def tomarSeleccionTipoVisita(request):
-    #datos previos
+    #datos previos:
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
-    responsableLogueado = request.POST.get('responsableLogueado')
     cantVisitantes = request.POST.get('cantVisitantes')
+    responsableLogueado = request.POST.get('responsableLogueado')
     sedeSeleccionada = request.POST.get('sedeSeleccionada')
-    # tomar datos del usuario
+    #tomar datos del usuario:
     tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
 
-    # mapear objeto sede
-    sede = Sede.objects.get(nombre=sedeSeleccionada)
+    sede = Sede.objects.get(nombre = sedeSeleccionada)
+    expTempVigentes = buscarExpTempVigentes(sede)
+    
+    if tipoVisitaSeleccionada.lower() == 'por exposicion':
 
-    if tipoVisitaSeleccionada.lower() == "por exposición":
-        #Selecciona "por exposición" (flujo básico)
-        expTempVigentes = buscarExpTempVigentes(sede)
         context = {
-            'responsableLogueado': responsableLogueado,
-            'escuelaSeleccionada': escuelaSeleccionada,
-            'cantVisitantes': cantVisitantes,
-            'sedeSeleccionada': sedeSeleccionada,
-            'tipoVisitaSeleccionada':tipoVisitaSeleccionada,
-            'expTempVigentes':expTempVigentes,
-        }
-        return render(request,"mostrarDatosExposicion.html", context)
+        'responsableLogueado': responsableLogueado,
+        'escuelaSeleccionada': escuelaSeleccionada,
+        'cantVisitantes': cantVisitantes,
+        'sedeSeleccionada': sedeSeleccionada,
+        'tipoVisitaSeleccionada': tipoVisitaSeleccionada,
+        'expTempVigentes': expTempVigentes,
+    }
+        return render(request, 'mostrarDatosExposicion.html',context)
     else:
-        #selecciona "completo" (flujo alternativo)
-        #TODO
-        expTempVigentes = buscarExpTempVigentes(sede)
         context = {
-            'responsableLogueado': responsableLogueado,
-            'escuelaSeleccionada': escuelaSeleccionada,
-            'cantVisitantes': cantVisitantes,
-            'sedeSeleccionada': sedeSeleccionada,
-            'tipoVisitaSeleccionada':tipoVisitaSeleccionada,
-            'exposicionSeleccionada':expTempVigentes,
-        }
-        return render(request,"solicitarFechaHoraReserva.html", context)
+        'responsableLogueado': responsableLogueado,
+        'escuelaSeleccionada': escuelaSeleccionada,
+        'cantVisitantes': cantVisitantes,
+        'sedeSeleccionada': sedeSeleccionada,
+        'exposicionSeleccionada':expTempVigentes,
+        'tipoVisitaSeleccionada': tipoVisitaSeleccionada,
+    }    
+        return render(request, 'solicitarFechaHoraReserva.html',context)
+
 
 def buscarExpTempVigentes(sede):
-    ExpTempVigente = sede.obtenerExpTempVigente()
-    return ExpTempVigente
+    expTempVigentes = sede.obtenerExpTempVigente()
+    return expTempVigentes
 #--------------------------------
 def tomarSeleccionExposicion(request):
     # datos viejos
@@ -242,7 +244,7 @@ def tomarSeleccionGuias(request):
     # datos viejos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
     responsableLogueado = request.POST.get('responsableLogueado')
-    cantVisitantes = request.POST.get('cantVisitantes')
+    cantVisitantes = int(request.POST.get('cantVisitantes'))
     sedeSeleccionada = request.POST.get('sedeSeleccionada')
     tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
     listaExposicionesSelec = request.POST.getlist('exposicionSeleccionada[]')
@@ -251,7 +253,6 @@ def tomarSeleccionGuias(request):
     cantGuias = request.POST.get('cantGuias')
     horarioInicio = request.POST.get('horarioInicio')
     horarioFin = request.POST.get('horarioFin')
-    
     # tomar datos del usuario
     guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
 
@@ -267,9 +268,9 @@ def tomarSeleccionGuias(request):
         'cantGuias': cantGuias,
         'horarioInicio': horarioInicio,
         'horarioFin': horarioFin,
-        'guiasSeleccionados':guiasSeleccionados,
+        'guiasSeleccionados': guiasSeleccionados,
     }
-    return render(request,"solicitarConfirmacion.html", context)
+    return render(request, 'solicitarConfirmacion.html', context)
 #-------------------------------
 def tomarConfirmacion(request):
     # datos viejos

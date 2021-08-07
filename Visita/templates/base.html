@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TPI DSI</title>
+    <title>{% block title %}TPI DSI{% endblock title %}</title>
 </head>
 <body>
     {% block content %}{% endblock content %}
+    <p>{{error}}</p>
 </body>
 </html>

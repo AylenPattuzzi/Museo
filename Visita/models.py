@@ -34,9 +34,9 @@ class HorarioEmpleado(models.Model):
 class Escuela(models.Model):
     domicilio = models.CharField(max_length=50, blank=True, null=True)
     mail = models.CharField(max_length=50, blank=True, null=True)
-    nombre = models.CharField(max_length=20)
-    telefCelular = models.IntegerField(blank=True, null=True)
-    telfFijo = models.IntegerField(blank=True, null=True)
+    nombre = models.CharField(max_length=100)
+    telefCelular = models.BigIntegerField(blank=True, null=True)
+    telfFijo = models.BigIntegerField(blank=True, null=True)
     def getNombre(self):
         return self.nombre
 
@@ -85,7 +85,7 @@ class CambioEstado(models.Model):
 class Estado(models.Model):
     ambito = models.CharField(max_length=15)
     descripcion = models.CharField(max_length=50, blank=True, null=True)
-    nombre = models.CharField(max_length=20)
+    nombre = models.CharField(max_length=50)
     def esPendienteDeConfirmacion(self):
         if self.nombre.lower() == "pendiente de confirmación":
             return True
@@ -178,7 +178,7 @@ class Exposicion(models.Model):
     def calcularDuracionObrasExpuestas(self, tipoVisitaSeleccionada):
         duracion = datetime.timedelta(0)
         for detalleExposicion in self.detalleExposicion.all():
-            if tipoVisitaSeleccionada.lower() == "por exposición": # Observación 2, si es por exposición se suman las duraciónes extendidas, si es completa las resumidas
+            if tipoVisitaSeleccionada.lower() == "por exposicion": # Observación 2, si es por exposicion se suman las duraciónes extendidas, si es completa las resumidas
                 # flujo básico, duración extendida
                 duracion += detalleExposicion.buscarDuracExtObra()
             else:
