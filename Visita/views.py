@@ -357,13 +357,13 @@ def tomarConfirmacion(request):
     )
 
     nuevaReserva.save()
-
+    
 
     context = {
         'reserva': nuevaReserva,
     }
-    return JsonResponse(serializers.serialize('json', [nuevaReserva,]), safe=False)
-    #return render(request,"finCU.html", context) 
+    #return JsonResponse(serializers.serialize('json', [nuevaReserva,]), safe=False)
+    return render(request,"finCU.html", context) 
 
 def buscarEstadoParaAsignar():
     for estado in Estado.objects.all():

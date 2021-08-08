@@ -4,6 +4,10 @@
     <form action="../tomarSeleccionExposicion/" method="POST" class="mt-3">
         <!-- datos viejos -->
         {% csrf_token %}
+        <div class="seleccionados-row row">
+            <label for="responsableLogueado" class="label-readonly">Responsable logueado: </label><input type="text" class="input-readonly" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
+            <br>
+            </div>
             <div class="seleccionados-row row">
                 <div class="col-12">
                 <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada" class="input-readonly">

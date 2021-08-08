@@ -92,7 +92,7 @@ class Estado(models.Model):
     descripcion = models.CharField(max_length=50, blank=True, null=True)
     nombre = models.CharField(max_length=50)
     def esPendienteDeConfirmacion(self):
-        if self.nombre.lower() == "pendiente de confirmación":
+        if self.nombre.lower() == "pendientedeconfirmacion":
             return True
         else:
             return False
@@ -269,6 +269,11 @@ class ReservaVisita(models.Model):
         
     def getNumeroReserva(self):
         return self.numeroReserva
+    
+    def getEstadoActual(self):
+        for cambioEstado in self.cabioEstado.all():
+            if cambioEstado.fechaHoraFin==None:
+                return cambioEstado.estado.nombre
     
     def new(self, cantVisitantes, fechaYHoraReserva, numeroParaAsignar, fechaHoraActual, duracionReserva, escuela, empleado, sede, estadoParaAsignar, asignacionGuia, exposicionesSeleccionadas):
 

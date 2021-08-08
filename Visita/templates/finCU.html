@@ -1,5 +1,76 @@
 {% extends "base.html"%}
 {% block content %}
-<h1>Fin Caso de uso</h1>
-{{}}
+<div class="container">
+    <div class="row exito">
+        <h3>¡Reserva creada con exito!</h3>
+    </div>
+    <div class="seleccionados-row row">
+        <div class="col-12">
+        <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input type="text" value="{{reserva.escuela.nombre}}" readonly="true" name="escuelaSeleccionada" class="input-readonly">
+        <br>
+        </div>
+    </div>
+    <div class="seleccionados-row row">
+        <div class="col-12">
+        <label for="cantVisitantes" class="label-readonly">Cantidad de visitantes: </label><input type="text" name="cantVisitantes" readonly="true" value="{{reserva.cantidadAlumnos}}" class="input-readonly">
+        <br>
+        </div>
+    </div>
+    <div class="seleccionados-row row">
+        <div class="col-12">
+            <label for="sedeSeleccionada" class="label-readonly">Sede: </label><input type="text" name="sedeSeleccionada" readonly="true" value="{{reserva.sede.nombre}}" class="input-readonly">
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <th></th>
+            <th class="col">Exposición</th>
+        </thead>
+        <tbody>
+            {% for expo in reserva.exposicion.all %}
+            <tr>
+                <td><input type="hidden" name="exposicionSeleccionada[]" value="{{expo}}" checked></td>
+                <td>{{expo.nombre}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+            <div class="seleccionados-row">
+            <label for="fechaYHoraReserva" class="bold label-readonly">Fecha y hora a reservar: </label><input class="input-readonly" type="datetime-local" name="fechaYHoraReserva" readonly="true" value="{{reserva.fechaHoraReserva}}">
+            <br>
+            </div>
+            <div class="seleccionados-row">
+            <label for="duracionReserva" class="label-readonly">Duración reserva: </label><input class="input-readonly" type="text" name="duracionReserva" readonly="true" value="{{reserva.duracionEstimada}}">
+            <br>
+            </div>
+            
+            <div class="seleccionados-row">
+            <label for="estado" class="label-readonly">Estado Actual: </label><input class="input-readonly" type="text" name="estado" readonly="true" value="{{reserva.getEstadoActual}}">
+            <br>
+            </div>
+            <div class="seleccionados-row">
+            <label for="numeroReserva" class="label-readonly">Id de Reserva: </label><input class="input-readonly" type="text" name="numeroReserva" readonly="true" value="{{reserva.numeroReserva}}">
+            <br>
+            </div>
+            <table class="table">
+                <thead>
+                    <th>Guías</th>
+                    <th class="col">Nombre</th>
+                    <th class="col">Apellido</th>
+                </thead>
+                <tbody>
+                    {% for asignacion in reserva.asignacionGuia.all %}
+                    <tr>
+                        <td><input type="hidden" name="guiasSeleccionados[]" value="{{guia}}" checked></td>
+                        <td>{{asignacion.guiaAsignado.nombre}}</td>
+                        <td>{{asignacion.guiaAsignado.apellido}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+    
+    
+
+</div>
+
 {% endblock content %}
