@@ -129,12 +129,15 @@ def tomarSeleccionTipoVisita(request):
     }
         return render(request, 'mostrarDatosExposicion.html',context)
     else:
+        expoNombres=[]
+        for expo in expTempVigentes:
+            expoNombres.append(expo.nombre)
         context = {
         'responsableLogueado': responsableLogueado,
         'escuelaSeleccionada': escuelaSeleccionada,
         'cantVisitantes': cantVisitantes,
         'sedeSeleccionada': sedeSeleccionada,
-        'exposicionSeleccionada':expTempVigentes,
+        'exposicionSeleccionada':expoNombres,
         'tipoVisitaSeleccionada': tipoVisitaSeleccionada,
     }    
         return render(request, 'solicitarFechaHoraReserva.html',context)

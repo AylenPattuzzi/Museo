@@ -30,16 +30,22 @@
         <!-- nuevos datos -->
         <table class="table  mt-4">
             <thead>
-                <th scope="col table-primary w-25">Seleccionar</th>
-                <th scope="col table-primary w-75">Exposición</th>
+                <th scope="col table-primary ">Seleccionar</th>
+                <th scope="col table-primary ">Exposición</th>
+                <th scope="col table-primary ">Hora Apertura</th>
+                <th scope="col table-primary ">Hora Cierre</th>
+                <th scope="col table-primary ">Publico Destino</th>
             </thead>
             <tbody>
 
                 {% if expTempVigentes %}
                     {% for expo in expTempVigentes %}
                     <tr>
-                        <td class="w-25"><input type="checkbox" name="exposicionSeleccionada[]" value="{{expo}}"></td>
-                        <td class="w-75">{{expo}}</td>
+                        <td class=""><input type="checkbox" name="exposicionSeleccionada[]" value="{{expo.nombre}}"></td>
+                        <td class="">{{expo.nombre}}</td>
+                        <td class="">{{expo.horaApertura}}</td>
+                        <td class="">{{expo.horaCierre}}</td>
+                        <td class="">{{expo.publicoDestino.nombre}}</td>
                     </tr>
                     {% endfor %}
                 {% else %}

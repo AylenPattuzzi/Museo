@@ -313,11 +313,11 @@ class Sede(models.Model):
     def getNombre(self):
         return self.nombre
     def obtenerExpTempVigente(self):
-        nombres = []
+        expos = []
         for expo in self.exposicion.all():
             if expo.esTemporal():
-                nombres.append(expo.nombre)
-        return nombres
+                expos.append(expo)
+        return expos
 
 
     def calcularDuracionDeExposicionesSeleccionadas(self, tipoVisitaSeleccionada, exposicionSeleccionada):
