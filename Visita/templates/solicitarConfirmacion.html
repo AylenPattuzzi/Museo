@@ -39,10 +39,10 @@
                     {% endfor %}
                 </tbody>
             </table>
-            
-            <input class="input-readonly" type="datetime-local" name="fechaYHoraReserva" readonly="true" value="{{fechaYHoraReserva}}">
+            <div class="seleccionados-row">
+            <label for="fechaYHoraReserva" class="bold">Fecha y hora a reservar:   </label>  <input class="input-readonly" type="datetime-local" name="fechaYHoraReserva" readonly="true" value="{{fechaYHoraReserva}}">
             <br>
-            
+            </div>
             <div class="seleccionados-row">
             <label for="duracionReserva" class="label-readonly">Duración reserva: </label><input class="input-readonly" type="text" name="duracionReserva" readonly="true" value="{{duracionReserva}}">
             <br>
