@@ -289,6 +289,7 @@ class ReservaVisita(models.Model):
         cambioEstado.new(estado, fechaHoraActual)
         cambioEstado.save()
         self.cabioEstado.add(cambioEstado)
+        self.save()
 
     def estaDentroDeFechaHora(self, fechaHora):
         if self.fechaHoraReserva.replace(tzinfo=None) <= fechaHora and (self.fechaHoraReserva+self.duracionEstimada).replace(tzinfo=None) >= fechaHora:
@@ -303,6 +304,7 @@ class ReservaVisita(models.Model):
             nuevaAsignacion.new(asignacion, fechaHoraInicio, fechaHoraFin)
             nuevaAsignacion.save()
             self.asignacionGuia.add(nuevaAsignacion)
+        self.save()
 
 class Sede(models.Model):
     cantMaximaVisitantes = models.IntegerField()
