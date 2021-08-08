@@ -16,15 +16,32 @@
         <!-- nuevos datos -->
         <table>
             <thead>
+<<<<<<< Updated upstream
                 <th>Seleccionar</th>
                 <th>Exposición</th>
+=======
+                <th scope="col table-primary ">Seleccionar</th>
+                <th scope="col table-primary">Exposición</th>
+                <th scope="col table-primary ">Horario Inicio</th>
+                <th scope="col table-primary ">Horario Fin</th>
+                <th scope="col table-primary">Publico Destino</th>
+>>>>>>> Stashed changes
             </thead>
             <tbody>
 
                 {% for expo in expTempVigentes %}
                 <tr>
+<<<<<<< Updated upstream
                     <td><input type="checkbox" name="exposicionSeleccionada[]" value="{{expo}}"></td>
                     <td>{{expo}}</td>
+=======
+                    <td class=""><input type="checkbox" name="exposicionSeleccionada[]" value="{{expo.nombre}}"></td>
+                    <td class="">{{expo.nombre}}</td>
+                    <td class="">{{expo.horaApertura}}</td>
+                    <td class="">{{expo.horaCierre}}</td>
+                    <td class="">{{expo.publicoDestino.nombre}}</td>
+
+>>>>>>> Stashed changes
                 </tr>
                 {% endfor %}
             </tbody>

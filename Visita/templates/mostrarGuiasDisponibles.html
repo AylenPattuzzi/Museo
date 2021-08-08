@@ -27,6 +27,7 @@
                 {% endfor %}
             </tbody>
         </table>
+<<<<<<< Updated upstream
         <input type="datetime-local" name="fechaYHoraReserva" readonly="true" value="{{fechaYHoraReserva}}">
         <br>
         <label for="duracionReserva">Duración reserva: </label><input type="text" name="duracionReserva" readonly="true" value="{{duracionReserva}}">
@@ -37,11 +38,34 @@
         <br>
         <label for="cantGuias">Guias Necesarios: </label><input type="text" name="cantGuias" readonly="true" value="{{cantGuias}}">
         <br>
+=======
+        <div class="seleccionados-row">
+        <label for="fechaYHoraReserva" class="label-readonly">Fecha y Hora de Reserva</label><input type="datetime-local" class="input-readonly" name="fechaYHoraReserva" readonly="true" value="{{fechaYHoraReserva}}">
+        <br></div>
+        <div class="seleccionados-row">
+        <label for="duracionReserva" class="label-readonly">Duración reserva: </label><input type="text" class="input-readonly" name="duracionReserva" readonly="true" value="{{duracionReserva}}">
+        <br></div>
+        <div class="seleccionados-row">
+        <label for="horarioInicio" class="label-readonly">Hora de Inicio: </label><input type="text" class="input-readonly" name="horarioInicio" readonly="true" value="{{horarioInicio}}">
+        <br></div>
+        <div class="seleccionados-row">
+        <label for="horarioFin" class="label-readonly">Hora de Finalización: </label><input type="text" class="input-readonly" name="horarioFin" readonly="true" value="{{horarioFin}}">
+        <br></div>
+        <div class="seleccionados-row">
+        <label for="cantGuias" class="label-readonly">Guias Necesarios: </label><input type="text" class="input-readonly" name="cantGuias" readonly="true" value="{{cantGuias}}">
+        <br></div>
+>>>>>>> Stashed changes
         <!-- nuevos datos -->
         <table>
             <thead>
+<<<<<<< Updated upstream
                 <th>Seleccionar</th>
                 <th>Guías</th>
+=======
+                <th class="col w-10">Seleccionar</th>
+                <th class="col">Guías</th>
+                
+>>>>>>> Stashed changes
             </thead>
             <tbody>
 

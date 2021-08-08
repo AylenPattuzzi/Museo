@@ -254,11 +254,23 @@ class Sede(models.Model):
     def getNombre(self):
         return self.nombre
     def obtenerExpTempVigente(self):
+<<<<<<< Updated upstream
         #TODO ------------------------------------------
         nombres = []
         for expo in Exposicion.objects.all():
             nombres.append(expo.nombre)
         return nombres
+=======
+        #TODO
+        expos = []
+        for expo in self.exposicion.all():
+            if expo.esTemporal():
+                expos.append(expo)
+                
+        return expos
+
+
+>>>>>>> Stashed changes
     def calcularDuracionDeExposicionesSeleccionadas(self, tipoVisitaSeleccionada, exposicionSeleccionada):
         duracion = datetime.timedelta(0)
         for exposicion in exposicionSeleccionada:
