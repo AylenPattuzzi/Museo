@@ -5,13 +5,12 @@
         <!-- datos viejos -->
         {% csrf_token %}
         <div class="seleccionados-row row">
+            <div class="seleccionados-row">
             <label for="responsableLogueado" class="label-readonly">Responsable logueado: </label><input type="text" class="input-readonly" value="{{responsableLogueado}}" readonly="true" name="responsableLogueado">
-            <br>
-            </div>
-            <div class="seleccionados-row row">
-                <div class="col-12">
-                <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada" class="input-readonly">
-                <br>
+            <br></div>
+            <div class="col-12">
+            <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input type="text" value="{{escuelaSeleccionada}}" readonly="true" name="escuelaSeleccionada" class="input-readonly">
+             <br>
             </div>
             </div>
             <div class="seleccionados-row row">

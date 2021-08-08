@@ -5,9 +5,13 @@
         <h3>¡Reserva creada con exito!</h3>
     </div>
     <div class="seleccionados-row row">
-        <div class="col-12">
-        <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input type="text" value="{{reserva.escuela.nombre}}" readonly="true" name="escuelaSeleccionada" class="input-readonly">
+        <label for="responsableLogueado" class="label-readonly">Creado por: </label><input type="text" class="input-readonly" value="{{reserva.empleado.getNombre}}" readonly="true" name="responsableLogueado">
         <br>
+        </div>
+        <div class="seleccionados-row row">
+            <div class="col-12">
+            <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input type="text" value="{{reserva.escuela.nombre}}" readonly="true" name="escuelaSeleccionada" class="input-readonly">
+            <br>
         </div>
     </div>
     <div class="seleccionados-row row">
@@ -36,7 +40,7 @@
         </tbody>
     </table>
             <div class="seleccionados-row">
-            <label for="fechaYHoraReserva" class="bold label-readonly">Fecha y hora a reservar: </label><input class="input-readonly" type="datetime-local" name="fechaYHoraReserva" readonly="true" value="{{reserva.fechaHoraReserva}}">
+            <label for="fechaYHoraReserva" class="bold label-readonly">Fecha y hora a reservar: </label><input class="input-readonly" type="text" name="fechaYHoraReserva" readonly="true" value="{{reserva.fechaHoraReserva}}">
             <br>
             </div>
             <div class="seleccionados-row">
