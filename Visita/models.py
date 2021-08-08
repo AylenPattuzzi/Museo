@@ -11,7 +11,7 @@ class HorarioEmpleado(models.Model):
     horaSalida = models.TimeField()
     diaSemana = models.ManyToManyField(DiaSemana)
     #def obtenerJornadaLaboral(self):
-        #ToDo
+        #TODO ver en el diagrama de secuencia, está mal, reemplazado por nlo de abajo
      #   return None
     def trabajaEnHorario(self, dia, horarioInicio, horarioFin):
         esMiDia = False
@@ -239,7 +239,7 @@ class Empleado(models.Model):
         if not trabajaEnHorario:
             return None # significa que no trabaja en ese horario
         
-        for asignacion in AsignacionVisita.objects.all(): #TODO
+        for asignacion in AsignacionVisita.objects.all():
             if asignacion.esAsignadoEnHorario(self, horarioInicio, horarioFin): #respeta el patron "lo hace quien conoce"
                 return True # significa que ya está asignado (ocupado)
 
@@ -254,16 +254,20 @@ class Sede(models.Model):
     def getNombre(self):
         return self.nombre
     def obtenerExpTempVigente(self):
-        #TODO ------------------------------------------
+        #TODO
         nombres = []
-        for expo in Exposicion.objects.all():
-            nombres.append(expo.nombre)
+        for expo in self.exposicion.all():
+            if expo.esTemporal():
+                nombres.append(expo.nombre)
         return nombres
+
+
     def calcularDuracionDeExposicionesSeleccionadas(self, tipoVisitaSeleccionada, exposicionSeleccionada):
         duracion = datetime.timedelta(0)
         for exposicion in exposicionSeleccionada:
             duracion += exposicion.calcularDuracionObrasExpuestas(tipoVisitaSeleccionada)
         return duracion
+
     def getCantMaximaVisitantes(self):
         return self.cantMaximaVisitantes 
 

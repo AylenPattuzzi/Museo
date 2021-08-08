@@ -164,7 +164,7 @@ def tomarSeleccionExposicion(request):
     return render(request,"solicitarFechaHoraReserva.html", context)
 #---------------------------------
 
-def tomarFechaHoraReserva(request):
+def tomarFechaHoraReserva(request, error = False):
     # datos viejos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
     responsableLogueado = request.POST.get('responsableLogueado')
@@ -172,6 +172,7 @@ def tomarFechaHoraReserva(request):
     sedeSeleccionada = request.POST.get('sedeSeleccionada')
     tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
     listaExposicionesSelec = request.POST.getlist('exposicionSeleccionada[]')
+    guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
     
     # tomar datos del usuario
     fechaYHoraReserva = request.POST.get('fechaYHoraReserva')
@@ -205,7 +206,10 @@ def tomarFechaHoraReserva(request):
     horarioFin = (fechaYHoraReservaParse + duracionReserva).time()
     guiasDisponibles = buscarGuiasDisponibles(sede, dia, horarioInicio, horarioFin)
     cantGuias = calcularCantGuiasNecesarios(sede, cantVisitantes)
-    
+    msgError = ''
+    print(guiasSeleccionados)
+    if error:
+        msgError = 'Seleccione la cantidad de guías exacta'
     context = {
         'responsableLogueado': responsableLogueado,
         'escuelaSeleccionada': escuelaSeleccionada,
@@ -219,6 +223,7 @@ def tomarFechaHoraReserva(request):
         'cantGuias': cantGuias,
         'horarioInicio': horarioInicio,
         'horarioFin': horarioFin,
+        'error': msgError,
     }
     return render(request,"mostrarGuiasDisponibles.html", context)
 
@@ -255,6 +260,11 @@ def tomarSeleccionGuias(request):
     horarioFin = request.POST.get('horarioFin')
     # tomar datos del usuario
     guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
+
+    if not len(guiasSeleccionados)== int(cantGuias):
+        return tomarFechaHoraReserva(request, True)
+
+
 
     context = {
         'responsableLogueado': responsableLogueado,
@@ -304,6 +314,5 @@ def buscarNumeroParaAsignar(reservaVisita):
 
 def obtenerFechaYHoraActual():
     return datetime.now()
-#TODO mirar
 
 #------------------------------------------------
