@@ -49,21 +49,25 @@
         <label for="cantGuias" class="label-readonly">Guias Necesarios: </label><input type="text" class="input-readonly" name="cantGuias" readonly="true" value="{{cantGuias}}">
         <br></div>
         <!-- nuevos datos -->
-        <table class="table mt-3">
-            <thead>
-                <th class="col w-25">Seleccionar</th>
-                <th class="col w-75">Guías</th>
-            </thead>
-            <tbody>
+        {% if guiasDisponibles %}
+            <table class="table mt-3">
+                <thead>
+                    <th class="col w-25">Seleccionar</th>
+                    <th class="col w-75">Guías</th>
+                </thead>
+                <tbody>
+                    {% for guia in guiasDisponibles %}
+                    <tr>
+                        <td><input type="checkbox" name="guiasSeleccionados[]" value="{{guia}}"></td>
+                        <td>{{guia}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay guias disponibles para asignar a la visita</p>
+        {% endif %}
 
-                {% for guia in guiasDisponibles %}
-                <tr>
-                    <td><input type="checkbox" name="guiasSeleccionados[]" value="{{guia}}"></td>
-                    <td>{{guia}}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
       
     
         <div class="submit-container">

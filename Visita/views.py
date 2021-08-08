@@ -1,9 +1,11 @@
 from Visita.models import Exposicion, TipoVisita
 from django.shortcuts import render
-from .models import Estado, Sesion, Escuela, Sede, Tarifa, ReservaVisita
-from datetime import datetime
+from .models import Estado, Sesion, Escuela, Sede, Tarifa, ReservaVisita, Empleado, AsignacionVisita
+from datetime import datetime, timedelta
 from django.utils.dateparse import parse_datetime
 import math
+from django.http import HttpResponse, JsonResponse
+from django.core import serializers
 
 # Create your views here.
 def index(request):
@@ -36,7 +38,7 @@ def buscarEscuela():
 #---------------------------------------------
 
 def tomarSeleccionEscuela(request):
-    # Datos viejos
+    # datos previos
     responsableLogueado = request.POST.get('responsableLogueado')
     # tomar datos del usuario:
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
@@ -72,7 +74,7 @@ def buscarSede():
     nombreSede = []
     for sede in Sede.objects.all(): #loop nombre Sede (mientras haya sedes)
         nombreSede.append(sede.getNombre())
-    return nombreSede # retorna una lista con todos los nombres de las sedes existentes
+    return nombreSede # retorna una lista con los nombres de las sedes existentes
 
 # ---------------------------------
 
@@ -143,7 +145,7 @@ def buscarExpTempVigentes(sede):
     return expTempVigentes
 #--------------------------------
 def tomarSeleccionExposicion(request):
-    # datos viejos
+    # datos previos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
     responsableLogueado = request.POST.get('responsableLogueado')
     cantVisitantes = request.POST.get('cantVisitantes')
@@ -165,7 +167,7 @@ def tomarSeleccionExposicion(request):
 #---------------------------------
 
 def tomarFechaHoraReserva(request, error = False):
-    # datos viejos
+    # datos previos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
     responsableLogueado = request.POST.get('responsableLogueado')
     cantVisitantes = int(request.POST.get('cantVisitantes'))
@@ -176,7 +178,7 @@ def tomarFechaHoraReserva(request, error = False):
     
     # tomar datos del usuario
     fechaYHoraReserva = request.POST.get('fechaYHoraReserva')
-    fechaYHoraReservaParse = parse_datetime(fechaYHoraReserva)
+    fechaYHoraReservaParse = parse_datetime(fechaYHoraReserva).replace(tzinfo=None)
 
     # mapear objeto sede
     sede = Sede.objects.get(nombre=sedeSeleccionada)
@@ -188,7 +190,7 @@ def tomarFechaHoraReserva(request, error = False):
 
     duracionReserva = calcularDuracionReserva(tipoVisitaSeleccionada, exposicionSeleccionada, sede)
 
-    if not verificarCapacidad(sede, cantVisitantes):
+    if not verificarCapacidad(sede, cantVisitantes, fechaYHoraReservaParse):
         context = {
             'responsableLogueado': responsableLogueado,
             'escuelaSeleccionada': escuelaSeleccionada,
@@ -201,10 +203,26 @@ def tomarFechaHoraReserva(request, error = False):
             'error': "La sede no tiene capacidad para esa cantidad de alumnos en la fecha seleccionada",
         }
         return render(request,"solicitarFechaHoraReserva.html",context)
-    dia = 'Lunes' #TODO
+    dia = fechaYHoraReservaParse.weekday()
+    if dia == 0:
+        dia = "lunes"
+    elif dia == 1:
+        dia = "martes"
+    elif dia == 2:
+        dia = "miercoles"
+    elif dia == 3:
+        dia = "jueves"
+    elif dia == 4:
+        dia = "viernes"
+    elif dia == 5:
+        dia = "sabado"
+    elif dia == 6:
+        dia = "domingo"
+    
+    
     horarioInicio = fechaYHoraReservaParse.time()
     horarioFin = (fechaYHoraReservaParse + duracionReserva).time()
-    guiasDisponibles = buscarGuiasDisponibles(sede, dia, horarioInicio, horarioFin)
+    guiasDisponibles = buscarGuiasDisponibles(sede, dia, fechaYHoraReservaParse, (fechaYHoraReservaParse+duracionReserva))
     cantGuias = calcularCantGuiasNecesarios(sede, cantVisitantes)
     msgError = ''
     print(guiasSeleccionados)
@@ -231,12 +249,12 @@ def calcularDuracionReserva(tipoVisitaSeleccionada, exposicionSeleccionada, sede
     duracionReserva = sede.calcularDuracionDeExposicionesSeleccionadas(tipoVisitaSeleccionada, exposicionSeleccionada)
     return duracionReserva
 
-def verificarCapacidad(sede, cantVisitantes):
-    tieneCapacidad = sede.verificarCapacidad(cantVisitantes)
+def verificarCapacidad(sede, cantVisitantes, fechaHora):
+    tieneCapacidad = sede.verificarCapacidad(cantVisitantes, fechaHora)
     return tieneCapacidad
 
-def buscarGuiasDisponibles(sede, dia, horarioInicio, horarioFin):
-    guiasDisponibles = sede.buscarGuiasDisponibles(dia, horarioInicio, horarioFin)
+def buscarGuiasDisponibles(sede, dia, fechaHoraInicio, fechaHoraFin):
+    guiasDisponibles = sede.buscarGuiasDisponibles(dia, fechaHoraInicio, fechaHoraFin)
     return guiasDisponibles
 
 def calcularCantGuiasNecesarios(sede, cantVisitantes):
@@ -246,7 +264,7 @@ def calcularCantGuiasNecesarios(sede, cantVisitantes):
 #---------------------------------------------
 
 def tomarSeleccionGuias(request):
-    # datos viejos
+    # datos previos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
     responsableLogueado = request.POST.get('responsableLogueado')
     cantVisitantes = int(request.POST.get('cantVisitantes'))
@@ -283,34 +301,81 @@ def tomarSeleccionGuias(request):
     return render(request, 'solicitarConfirmacion.html', context)
 #-------------------------------
 def tomarConfirmacion(request):
-    # datos viejos
+    # datos para generar una nueva reserva
+    cantVisitantes = int(request.POST.get('cantVisitantes'))
+    fechaYHoraReserva = parse_datetime(request.POST.get('fechaYHoraReserva'))
+    numeroParaAsignar = buscarNumeroParaAsignar()
+    fechaHoraActual = obtenerFechaYHoraActual()
+    duracionReserva = datetime.strptime(request.POST.get('duracionReserva'), '%H:%M:%S')
+    duracionReserva = timedelta(hours=duracionReserva.hour, minutes=duracionReserva.minute, seconds=duracionReserva.second)
+
+    # Datos que deben Mapearse -----------------------------------------------
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
+    escuela = Escuela.objects.get(nombre=escuelaSeleccionada)
     responsableLogueado = request.POST.get('responsableLogueado')
-    cantVisitantes = request.POST.get('cantVisitantes')
+    responsableLogueado = responsableLogueado.split(", ")
+    empleado = Empleado.objects.get(apellido= responsableLogueado[0], nombre=responsableLogueado[1])
     sedeSeleccionada = request.POST.get('sedeSeleccionada')
-    tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
+    sede = Sede.objects.get(nombre=sedeSeleccionada)
+    estadoParaAsignar = buscarEstadoParaAsignar()
+
+    guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
+    asignacionGuia = []
+    for guia  in guiasSeleccionados:
+        guia = guia.split(", ")
+        asignacionGuia.append(Empleado.objects.get(apellido=guia[0] ,nombre = guia[1]))
+    
     listaExposicionesSelec = request.POST.getlist('exposicionSeleccionada[]')
-    fechaYHoraReserva = request.POST.get('fechaYHoraReserva')
-    duracionReserva = request.POST.get('duracionReserva')
-    cantGuias = request.POST.get('cantGuias')
+    exposicionesSeleccionadas = []
+    for exposicion in listaExposicionesSelec:
+        exposicionesSeleccionadas.append(Exposicion.objects.get(nombre=exposicion))
+
+    # datos viejos que no se usan para crear la reserva (se pueden mostrar en la pantalla final)
     horarioInicio = request.POST.get('horarioInicio')
     horarioFin = request.POST.get('horarioFin')
-    guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
+    cantGuias = request.POST.get('cantGuias')
+    tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
+    
+    
 
-    ReservaVisita.objects.create()
+    nuevaReserva = ReservaVisita.objects.create()
+    nuevaReserva.new(
+        cantVisitantes,
+        fechaYHoraReserva,
+        numeroParaAsignar,
+        fechaHoraActual,
+        duracionReserva,
+        escuela,
+        empleado,
+        sede,
+        estadoParaAsignar,
+        asignacionGuia,
+        exposicionesSeleccionadas
+    )
+
+    nuevaReserva.save()
+
+
     context = {
-        
+        'reserva': nuevaReserva,
     }
-    return render(request,"finCU.html", context) 
+    return JsonResponse(serializers.serialize('json', [nuevaReserva,]), safe=False)
+    #return render(request,"finCU.html", context) 
 
-def buscarEstadoParaAsignar(): #TODO cambiar nombre
+def buscarEstadoParaAsignar():
     for estado in Estado.objects.all():
         if estado.esPendienteDeConfirmacion():
             return estado
 
-def buscarNumeroParaAsignar(reservaVisita):
-    numeroParaAsignar = reservaVisita.getNumeroReserva()
-    return numeroParaAsignar
+def buscarNumeroParaAsignar():
+    maxNumeroReserva = 0
+    for reserva in ReservaVisita.objects.all():
+        try:
+            if maxNumeroReserva < reserva.getNumeroReserva():
+                maxNumeroReserva = reserva.getNumeroReserva()
+        except:
+            pass
+    return maxNumeroReserva + 1
 
 def obtenerFechaYHoraActual():
     return datetime.now()

@@ -35,13 +35,16 @@
             </thead>
             <tbody>
 
-                
-                {% for expo in expTempVigentes %}
-                <tr>
-                    <td class="w-25"><input type="checkbox" name="exposicionSeleccionada[]" value="{{expo}}"></td>
-                    <td class="w-75">{{expo}}</td>
-                </tr>
-                {% endfor %}
+                {% if expTempVigentes %}
+                    {% for expo in expTempVigentes %}
+                    <tr>
+                        <td class="w-25"><input type="checkbox" name="exposicionSeleccionada[]" value="{{expo}}"></td>
+                        <td class="w-75">{{expo}}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <p>No hay exposiciónes temporales vigentes en la sede seleccionada.</p>
+                {% endif %}
                 
             </tbody>
         </table>

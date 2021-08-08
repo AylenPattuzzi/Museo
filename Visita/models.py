@@ -1,3 +1,4 @@
+from django.core import serializers
 from django.db import models
 import datetime
 
@@ -15,13 +16,13 @@ class HorarioEmpleado(models.Model):
      #   return None
     def trabajaEnHorario(self, dia, horarioInicio, horarioFin):
         esMiDia = False
-        for dia in DiaSemana:
-            if dia.getNombre().lower() == dia:
+        for diaSemana in self.diaSemana.all():
+            if diaSemana.getNombre().lower() == dia:
                 esMiDia = True
                 break
         if not esMiDia:
             return False #no es mi dia
-        if self.getHoraIngreso(self) <= horarioInicio and self.getHoraSalida() > horarioFin:
+        if self.getHoraIngreso() <= horarioInicio and self.getHoraSalida() > horarioFin:
             return True # es mi dia y horario
         else:
             return False #es mi dia pero no mi horario
@@ -41,21 +42,23 @@ class Escuela(models.Model):
         return self.nombre
 
 class AsignacionVisita(models.Model):
-    fechaHoraFin = models.DateTimeField()
-    fechaHoraInicio = models.DateTimeField()
-    guiaAsignado = models.ForeignKey("Empleado", on_delete=models.CASCADE) 
+    fechaHoraFin = models.DateTimeField(blank=True, null=True)
+    fechaHoraInicio = models.DateTimeField(blank=True, null=True)
+    guiaAsignado = models.ForeignKey("Empleado", on_delete=models.CASCADE, blank=True, null=True) 
     #def tieneAsignadoVisitas(self):
     def esAsignadoEnHorario(self, empleado, horarioInicio, horarioFin):
         if not self.guiaAsignado == empleado:
             return False
-        if self.fechaHoraInicio <= horarioInicio and self.fechaHoraFin > horarioInicio:
+        if self.fechaHoraInicio.replace(tzinfo=None) <= horarioInicio and self.fechaHoraFin.replace(tzinfo=None) > horarioInicio:
             return True
-        elif self.fechaHoraInicio < horarioFin and self.fechaHoraFin >= horarioFin:
+        elif self.fechaHoraInicio.replace(tzinfo=None) < horarioFin and self.fechaHoraFin.replace(tzinfo=None) >= horarioFin:
             return True
         else:
             return False
-    def new():
-        return 
+    def new(self, empleado, fechaHoraInicio, fechaHoraFin):
+        self.guiaAsignado = empleado
+        self.fechaHoraInicio = fechaHoraInicio
+        self.fechaHoraFin = fechaHoraFin
 
 class TipoExposicion(models.Model):
     descripcion = models.CharField(max_length=50, blank=True, null=True)
@@ -74,13 +77,15 @@ class PublicoDestino(models.Model):
         return self.nombre
 
 class CambioEstado(models.Model):
-    fechaHoraFin = models.DateTimeField() 
-    fechaHoraInicio = models.DateTimeField()
-    estado = models.ForeignKey("Estado", on_delete=models.CASCADE)
+    fechaHoraFin = models.DateTimeField(blank=True, null=True) 
+    fechaHoraInicio = models.DateTimeField(blank=True, null=True)
+    estado = models.ForeignKey("Estado", on_delete=models.CASCADE, blank=True, null=True)
     def setEstado(self, estado):
         self.estado = estado
-    def new():
-        return 
+    def new(self, estado, fechaHoraActual):
+        self.fechaHoraInicio = fechaHoraActual
+        self.setEstado(estado)
+        
 
 class Estado(models.Model):
     ambito = models.CharField(max_length=15)
@@ -141,7 +146,7 @@ class Cargo(models.Model):
     descripcion = models.CharField(max_length= 200, blank=True, null=True)
     nombre = models.CharField(max_length= 40)
     def esGuia(self):
-        if self.nombre.lower() == "guía":
+        if self.nombre.lower() == "guia de exposicion":
             return True
         else:
             return False
@@ -220,30 +225,84 @@ class Empleado(models.Model):
     horarioEmpleado = models.ManyToManyField(HorarioEmpleado, blank=True)
     sedeDondeTrabaja = models.ForeignKey("Sede", on_delete=models.CASCADE, blank=True, null=True)
     def getNombre(self):
-        return self.nombre + ' ' + self.apellido
-    def tieneAsignacionesEnHorario(self, dia, horarioInicio, horarioFin):
-        
+        return self.apellido + ", " + self.nombre
+    def tieneAsignacionesEnHorario(self, dia, fechaHoraInicio, fechaHoraFin):
         if not self.cargo.esGuia():
-           return None # significa que no es un guia
+            return None # significa que no es un guia
         
         trabajaEnHorario = False # bandera
 
         for horario in self.horarioEmpleado.all(): #loop horarios empleado
             
             #horario.obtenerJornadaLaboral() rompe el patron "lo hace quien conoce"
-            
-            if horario.trabajaEnHorario(dia, horarioInicio, horarioFin): #dejo que "quien conoce" haga el cálculo
+            if horario.trabajaEnHorario(dia, fechaHoraInicio.time(), fechaHoraFin.time()): #dejo que "quien conoce" haga el cálculo
                 trabajaEnHorario = True 
-                break
         
         if not trabajaEnHorario:
             return None # significa que no trabaja en ese horario
         
         for asignacion in AsignacionVisita.objects.all():
-            if asignacion.esAsignadoEnHorario(self, horarioInicio, horarioFin): #respeta el patron "lo hace quien conoce"
+            if asignacion.esAsignadoEnHorario(self, fechaHoraInicio, fechaHoraFin): #respeta el patron "lo hace quien conoce"
                 return True # significa que ya está asignado (ocupado)
 
         return False #significa que no fue asignado, pero si trabaja en el horario solicitado. (libre)
+
+class ReservaVisita(models.Model):
+    cantidadAlumnos = models.IntegerField(blank=True, null=True)
+    cantidadAlumnosConfirmada = models. IntegerField(blank=True, null=True)
+    duracionEstimada = models. DurationField(blank=True, null=True)
+    fechaHoraCreacion = models.DateTimeField(blank=True, null=True)
+    fechaHoraReserva = models.DateTimeField(blank=True, null=True)
+    horaFinReal = models.TimeField(blank=True, null=True)
+    horaInicioReal = models.TimeField(blank=True, null=True)
+    numeroReserva = models.IntegerField(blank=True, null=True)
+    empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE, blank=True, null=True)
+    asignacionGuia = models.ManyToManyField(AsignacionVisita)
+    escuela = models.ForeignKey(Escuela, on_delete=models.CASCADE, blank=True, null=True)
+    sede = models.ForeignKey("Sede", on_delete=models.CASCADE, blank=True, null=True)
+    exposicion = models.ManyToManyField(Exposicion)
+    cabioEstado = models.ManyToManyField(CambioEstado)
+    def getCantVisitantes(self):
+        return self.cantidadAlumnos
+    def getCantMaximaVisitantes(self):
+        return self.sede.getCantMaximaVisitantes()
+        
+    def getNumeroReserva(self):
+        return self.numeroReserva
+    
+    def new(self, cantVisitantes, fechaYHoraReserva, numeroParaAsignar, fechaHoraActual, duracionReserva, escuela, empleado, sede, estadoParaAsignar, asignacionGuia, exposicionesSeleccionadas):
+
+        self.cantidadAlumnos = cantVisitantes
+        self.fechaHoraReserva = fechaYHoraReserva
+        self.numeroReserva = numeroParaAsignar
+        self.fechaHoraCreacion = fechaHoraActual
+        self.duracionEstimada = duracionReserva
+        self.escuela = escuela
+        self.empleado = empleado
+        self.sede = sede
+        self.exposicion.add(*exposicionesSeleccionadas)
+        self.crearCambioEstado(estadoParaAsignar, fechaHoraActual)
+        self.crearAsignaciones(asignacionGuia, fechaYHoraReserva, fechaYHoraReserva+duracionReserva)
+
+    def crearCambioEstado(self, estado, fechaHoraActual):
+        cambioEstado = CambioEstado.objects.create()
+        cambioEstado.new(estado, fechaHoraActual)
+        cambioEstado.save()
+        self.cabioEstado.add(cambioEstado)
+
+    def estaDentroDeFechaHora(self, fechaHora):
+        if self.fechaHoraReserva.replace(tzinfo=None) <= fechaHora and (self.fechaHoraReserva+self.duracionEstimada).replace(tzinfo=None) >= fechaHora:
+            return True
+        else:
+            return False
+
+
+    def crearAsignaciones(self, asignaciones, fechaHoraInicio, fechaHoraFin):
+        for asignacion in asignaciones:
+            nuevaAsignacion = AsignacionVisita.objects.create()
+            nuevaAsignacion.new(asignacion, fechaHoraInicio, fechaHoraFin)
+            nuevaAsignacion.save()
+            self.asignacionGuia.add(nuevaAsignacion)
 
 class Sede(models.Model):
     cantMaximaVisitantes = models.IntegerField()
@@ -254,7 +313,6 @@ class Sede(models.Model):
     def getNombre(self):
         return self.nombre
     def obtenerExpTempVigente(self):
-        #TODO
         nombres = []
         for expo in self.exposicion.all():
             if expo.esTemporal():
@@ -271,51 +329,29 @@ class Sede(models.Model):
     def getCantMaximaVisitantes(self):
         return self.cantMaximaVisitantes 
 
-    def buscarGuiasDisponibles(self, dia, horarioInicio, horarioFin):
+    def buscarGuiasDisponibles(self, dia, fechaHoraInicio, fechaHoraFin):
         empleados = []
         for empleado in Empleado.objects.filter(sedeDondeTrabaja = self):
-            if not empleado.tieneAsignacionesEnHorario(dia, horarioInicio, horarioFin):
-                empleados.append(empleado.getNombre())
+            tieneAsignaciones = empleado.tieneAsignacionesEnHorario(dia, fechaHoraInicio, fechaHoraFin)
+            if tieneAsignaciones != None:
+                if not tieneAsignaciones:
+                    empleados.append(empleado.getNombre())
         return empleados
 
     def getCantMaxPorGuia(self):
         return self.cantMaxPorGuia
     
-    def getCantVisitantesFechaHora(self):
-        #TODO
-        return 0
-    def verificarCapacidad(self, cantVisitantesNuevos):
-        cantVisitantes = self.getCantVisitantesFechaHora()
+    def getCantVisitantesFechaHora(self, fechaHora):
+        cantVisitantes = 0
+        for reserva in ReservaVisita.objects.filter(sede=self):
+            if reserva.estaDentroDeFechaHora(fechaHora):
+                cantVisitantes += reserva.getCantVisitantes()
+        return cantVisitantes
+    
+    def verificarCapacidad(self, cantVisitantesNuevos, fechaHora):
+        cantVisitantes = self.getCantVisitantesFechaHora(fechaHora)
         cantMaxVisitantes = self.getCantMaximaVisitantes()
         if cantVisitantesNuevos + cantVisitantes > cantMaxVisitantes:
             return False
         else:
             return True
-
-class ReservaVisita(models.Model):
-    cantidadAlumnos = models.IntegerField(blank=True, null=True)
-    cantidadAlumnosConfirmada = models. IntegerField(blank=True, null=True)
-    duracionEstimada = models. DurationField(blank=True, null=True)
-    fechaHoraCreacion = models.DateTimeField(blank=True, null=True)
-    fechaHoraReserva = models.DateTimeField(blank=True, null=True)
-    horaFinReal = models.TimeField(blank=True, null=True)
-    horaInicioReal = models.TimeField(blank=True, null=True)
-    numeroReserva = models.IntegerField(blank=True, null=True)
-    empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE)
-    asignacionGuia = models.ForeignKey(AsignacionVisita, on_delete=models.CASCADE)
-    escuela = models.ForeignKey(Escuela, on_delete=models.CASCADE)
-    sede = models.ForeignKey(Sede, on_delete=models.CASCADE)
-    exposicion = models.ForeignKey(Exposicion, on_delete=models.CASCADE)
-    cabioEstado = models.ForeignKey(CambioEstado, on_delete=models.CASCADE)
-    def getCantAlumnos(self):
-        return self.cantidadAlumnos
-    def getCantMaximaVisitantes(self):
-        return self.sede.getCantMaximaVisitantes()
-    def getNumeroReserva(self):
-        return self.numeroReserva
-    def crearCambioEstado(self):
-        #TODO
-        return
-    
-    def new():
-        return 
