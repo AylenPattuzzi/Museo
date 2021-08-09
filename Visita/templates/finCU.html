@@ -6,9 +6,11 @@
     <p>Datos de la reserva:</p>
     <hr>
     <div class="seleccionados-row row">
-        <label for="responsableLogueado" class="label-readonly">Creado por: </label><input type="text" class="input-readonly" value="{{reserva.empleado.getNombre}}" readonly="true" name="responsableLogueado">
-        <br>
+        <div class="col-12">
+            <label for="responsableLogueado" class="label-readonly">Creado por: </label><input type="text" class="input-readonly" value="{{reserva.empleado.getNombre}}" readonly="true" name="responsableLogueado">
+            <br>
         </div>
+    </div>
         <div class="seleccionados-row row">
             <div class="col-12">
             <label for="escuelaSeleccionada" class="label-readonly">Escuela: </label><input type="text" value="{{reserva.escuela.nombre}}" readonly="true" name="escuelaSeleccionada" class="input-readonly">

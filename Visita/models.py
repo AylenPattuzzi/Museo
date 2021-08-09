@@ -11,8 +11,6 @@ class HorarioEmpleado(models.Model):
     horaIngreso = models.TimeField()
     horaSalida = models.TimeField()
     diaSemana = models.ManyToManyField(DiaSemana)
-    #def obtenerJornadaLaboral(self):
-        #TODO ver en el diagrama de secuencia, está mal, reemplazado por nlo de abajo
      #   return None
     def trabajaEnHorario(self, dia, horarioInicio, horarioFin):
         esMiDia = False
