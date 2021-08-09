@@ -2,8 +2,13 @@ from django.core import serializers
 from django.db import models
 import datetime
 
+#!Este es el formato de la clase aplicado para todo, hereda el Model que es el ORM de django
+#!Se definen los atributos y un tipo de campo para ese atributo, charField para caracteres varios, timeFieldtemporales y Many to Many cuando es una relacion
+#!de muchos a muchos entre clases
 class DiaSemana(models.Model):
     nombre = models.CharField(max_length=20)
+
+    #!Asi se define los metodos de las clases, en este caso es un get sobre el nombre 
     def getNombre(self):
         return self.nombre
 
@@ -11,14 +16,12 @@ class HorarioEmpleado(models.Model):
     horaIngreso = models.TimeField()
     horaSalida = models.TimeField()
     diaSemana = models.ManyToManyField(DiaSemana)
-    #def obtenerJornadaLaboral(self):
-        #TODO ver en el diagrama de secuencia, está mal, reemplazado por nlo de abajo
-     #   return None
+    
     def trabajaEnHorario(self, dia, horarioInicio, horarioFin):
-        esMiDia = False
+        esMiDia = False #booleano que indica si ese horario aplica ese dia
         for diaSemana in self.diaSemana.all():
             if diaSemana.getNombre().lower() == dia:
-                esMiDia = True
+                esMiDia = True #Si el dia de la semana es el dia del horario, si aplica ese dia
                 break
         if not esMiDia:
             return False #no es mi dia
@@ -33,7 +36,7 @@ class HorarioEmpleado(models.Model):
         return self.horaIngreso
 
 class Escuela(models.Model):
-    domicilio = models.CharField(max_length=50, blank=True, null=True)
+    domicilio = models.CharField(max_length=50, blank=True, null=True) #Tambien se muestra el maximo de caracteres, si puede estar vacio o ser null
     mail = models.CharField(max_length=50, blank=True, null=True)
     nombre = models.CharField(max_length=100)
     telefCelular = models.BigIntegerField(blank=True, null=True)
@@ -45,26 +48,32 @@ class AsignacionVisita(models.Model):
     fechaHoraFin = models.DateTimeField(blank=True, null=True)
     fechaHoraInicio = models.DateTimeField(blank=True, null=True)
     guiaAsignado = models.ForeignKey("Empleado", on_delete=models.CASCADE, blank=True, null=True) 
-    #def tieneAsignadoVisitas(self):
+   
+   
     def esAsignadoEnHorario(self, empleado, horarioInicio, horarioFin):
-        if not self.guiaAsignado == empleado:
+        if not self.guiaAsignado == empleado: #Si el guia de la asignacion actual es el empleado por el que preguntamos
             return False
+        #Comprueba que el empleado parametro no tenga asignaciones en los horarios parametro comparando los horarios de la asignacion actual con el dato ingresado
         if self.fechaHoraInicio.replace(tzinfo=None) <= horarioInicio and self.fechaHoraFin.replace(tzinfo=None) > horarioInicio:
             return True
         elif self.fechaHoraInicio.replace(tzinfo=None) < horarioFin and self.fechaHoraFin.replace(tzinfo=None) >= horarioFin:
             return True
         else:
             return False
+    #!Se crea una nueva asignacion y se asignan los valores de los atributos. De esta forma se realiza en todas las clases
     def new(self, empleado, fechaHoraInicio, fechaHoraFin):
         self.guiaAsignado = empleado
         self.fechaHoraInicio = fechaHoraInicio
         self.fechaHoraFin = fechaHoraFin
 
+#Clase tipoExposicion
 class TipoExposicion(models.Model):
     descripcion = models.CharField(max_length=50, blank=True, null=True)
     nombre = models.CharField(max_length=20)
+    
+    #Confirma si el tipo de exposicion es temporal
     def esTemporal(self):
-        if self.nombre.lower() == "temporal":
+        if self.nombre.lower() == "temporal": #Si es temporal devuelve valor booleano
             return True
         else:
             return False
@@ -91,6 +100,8 @@ class Estado(models.Model):
     ambito = models.CharField(max_length=15)
     descripcion = models.CharField(max_length=50, blank=True, null=True)
     nombre = models.CharField(max_length=50)
+
+    #Si el estado es pendiente de confirmacion devuelve un boolean
     def esPendienteDeConfirmacion(self):
         if self.nombre.lower() == "pendientedeconfirmacion":
             return True
@@ -111,6 +122,8 @@ class Obra(models.Model):
     valuacion = models.FloatField(blank=True, null=True) 
     cambioEstado = models.ManyToManyField(CambioEstado, blank=True) ## ---------------
     empleado = models.ForeignKey("Empleado", on_delete=models.CASCADE, blank=True) #----------
+
+    #Devuelven los atributos de duracion de la obra
     def getDuracionExtendida(self):
         return self.duracionExtendida
     def getDuracionResumida(self):
@@ -120,6 +133,8 @@ class Obra(models.Model):
 class DetalleExposicion(models.Model):
     lugarAsignado = models.CharField(max_length=50, blank=True, null=True)
     obra = models.ForeignKey(Obra, on_delete=models.CASCADE)
+
+    #llaman a los metodos de la obra para obtener las duraciones
     def buscarDuracExtObra(self):
         return self.obra.getDuracionExtendida()
     def buscarDuracResObra(self):
@@ -134,7 +149,7 @@ class Usuario(models.Model):
         return self.empleado.getNombre()
 
 class Sesion(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE) #!Asi se definen las Foreign Keys en relaciones de uno a muchos
     fechaFin = models.DateField(blank=True, null=True)
     fechaInicio = models.DateField(blank=True, null=True)
     horaFin = models.TimeField()
@@ -163,14 +178,19 @@ class Exposicion(models.Model):
     tipoExposicion = models.ForeignKey(TipoExposicion, on_delete=models.CASCADE, blank=True, null=True)
     publicoDestino = models.ForeignKey(PublicoDestino, on_delete=models.CASCADE, blank=True, null=True)
     detalleExposicion = models.ManyToManyField(DetalleExposicion, blank=True)
+    
+    #Pregunta si el tipo de exposicion de una exposicion particular es temporal, llamando al metodo esTemporal de la clase TipoExposicion
     def esTemporal(self):
         return self.tipoExposicion.esTemporal()
+
+    #Compara la fecha de inicio y de fin de una exposicion con la fecha actual (pasada como parametro)
     def esVigente(self, fechaActual):
         if self.fechaInicio <= fechaActual and self.fechaFin >= fechaActual:
             return True 
         else:
             return False
 
+    #Obtiene el nombre del publicoDestino de la exposicion
     def obtenerPublicoDestino(self):
         return self.publicoDestino.mostarNombre()
 
@@ -180,6 +200,7 @@ class Exposicion(models.Model):
     def getHoraCierre(self):
         return self.horaCierre
 
+    #Realiza una sumatoria de los tiempos de las obras de las exposiciones dependiendo el tipo de visita seleccionada
     def calcularDuracionObrasExpuestas(self, tipoVisitaSeleccionada):
         duracion = datetime.timedelta(0)
         for detalleExposicion in self.detalleExposicion.all():
@@ -191,6 +212,7 @@ class Exposicion(models.Model):
                 duracion += detalleExposicion.buscarDuracResObra()
         return duracion
 
+    #Busca los guias disponibles dado un dia y horario, usando el metodo de control de asignaciones en algun horario
     def buscarGuiasDisponibles(self, dia, horarioInicio, horarioFin):
         return self.empleado.tieneAsignacionesEnHorario(dia, horarioInicio, horarioFin)
 
@@ -204,7 +226,7 @@ class Tarifa(models.Model):
     fechaInicioVigencia = models.DateField()
     monto = models.DecimalField(decimal_places=4, max_digits=13)
     montoAdicionalGuia = models.DecimalField(decimal_places=4, max_digits=13)
-    tipoVisita = models.ForeignKey(TipoVisita, on_delete=models.CASCADE) #------------
+    tipoVisita = models.ForeignKey(TipoVisita, on_delete=models.CASCADE) 
     def obtenerTipoVisita(self):
         return self.tipoVisita.mostrarNombre()
 
@@ -226,6 +248,8 @@ class Empleado(models.Model):
     sedeDondeTrabaja = models.ForeignKey("Sede", on_delete=models.CASCADE, blank=True, null=True)
     def getNombre(self):
         return self.apellido + ", " + self.nombre
+
+    
     def tieneAsignacionesEnHorario(self, dia, fechaHoraInicio, fechaHoraFin):
         if not self.cargo.esGuia():
             return None # significa que no es un guia
@@ -270,6 +294,7 @@ class ReservaVisita(models.Model):
     def getNumeroReserva(self):
         return self.numeroReserva
     
+    #Recorre todos los cambios de estado de una reserva y selecciona el ultimo. Basandose en que este no tiene fechaHoraFin asignado
     def getEstadoActual(self):
         for cambioEstado in self.cabioEstado.all():
             if cambioEstado.fechaHoraFin==None:
@@ -286,8 +311,8 @@ class ReservaVisita(models.Model):
         self.empleado = empleado
         self.sede = sede
         self.exposicion.add(*exposicionesSeleccionadas)
-        self.crearCambioEstado(estadoParaAsignar, fechaHoraActual)
-        self.crearAsignaciones(asignacionGuia, fechaYHoraReserva, fechaYHoraReserva+duracionReserva)
+        self.crearCambioEstado(estadoParaAsignar, fechaHoraActual) #Junto con la creacion de una nueva reserva se crea el cambio de estado
+        self.crearAsignaciones(asignacionGuia, fechaYHoraReserva, fechaYHoraReserva+duracionReserva) #Y tambien se crean las asignaciones pertinentes
 
     def crearCambioEstado(self, estado, fechaHoraActual):
         cambioEstado = CambioEstado.objects.create()
@@ -296,6 +321,7 @@ class ReservaVisita(models.Model):
         self.cabioEstado.add(cambioEstado)
         self.save()
 
+    #Chequea si la reserva esta dentro de una fecha y hora, se utiliza como una parte del metodo para calcular la capacidad de la sede en una fecha y hora dadas
     def estaDentroDeFechaHora(self, fechaHora):
         if self.fechaHoraReserva.replace(tzinfo=None) <= fechaHora and (self.fechaHoraReserva+self.duracionEstimada).replace(tzinfo=None) >= fechaHora:
             return True
@@ -326,7 +352,7 @@ class Sede(models.Model):
                 expos.append(expo)
         return expos
 
-
+    #Realiza la sumatoria de las obras expuestas de las exposiciones seleccionadas dada un tipo de visita seleccionado
     def calcularDuracionDeExposicionesSeleccionadas(self, tipoVisitaSeleccionada, exposicionSeleccionada):
         duracion = datetime.timedelta(0)
         for exposicion in exposicionSeleccionada:
@@ -336,18 +362,20 @@ class Sede(models.Model):
     def getCantMaximaVisitantes(self):
         return self.cantMaximaVisitantes 
 
+
     def buscarGuiasDisponibles(self, dia, fechaHoraInicio, fechaHoraFin):
         empleados = []
-        for empleado in Empleado.objects.filter(sedeDondeTrabaja = self):
-            tieneAsignaciones = empleado.tieneAsignacionesEnHorario(dia, fechaHoraInicio, fechaHoraFin)
-            if tieneAsignaciones != None:
-                if not tieneAsignaciones:
-                    empleados.append(empleado.getNombre())
+        for empleado in Empleado.objects.filter(sedeDondeTrabaja = self): #Filtra y recorre los empleados que trabajan en una sede dada
+            tieneAsignaciones = empleado.tieneAsignacionesEnHorario(dia, fechaHoraInicio, fechaHoraFin) #Chequea si el empleado tiene asignaciones
+            if tieneAsignaciones != None: #tieneAsignaciones retorna None cuando no es un guia
+                if not tieneAsignaciones: #Si no tiene asignaciones
+                    empleados.append(empleado.getNombre()) #Lo agrega a la lista de guias
         return empleados
 
     def getCantMaxPorGuia(self):
         return self.cantMaxPorGuia
     
+    #Calcula la cantidad de visitantes en una sede dada una fecha y hora
     def getCantVisitantesFechaHora(self, fechaHora):
         cantVisitantes = 0
         for reserva in ReservaVisita.objects.filter(sede=self):
@@ -355,10 +383,11 @@ class Sede(models.Model):
                 cantVisitantes += reserva.getCantVisitantes()
         return cantVisitantes
     
+    #Utiliza todos los metodos anteriores para verificar que no se sobrepase la capacidad de visitantes ingresados a la capacidad que va a haber para esa fecha y hora
     def verificarCapacidad(self, cantVisitantesNuevos, fechaHora):
-        cantVisitantes = self.getCantVisitantesFechaHora(fechaHora)
-        cantMaxVisitantes = self.getCantMaximaVisitantes()
-        if cantVisitantesNuevos + cantVisitantes > cantMaxVisitantes:
-            return False
+        cantVisitantes = self.getCantVisitantesFechaHora(fechaHora) #Obtiene los visitantes que va a haber en esa hora
+        cantMaxVisitantes = self.getCantMaximaVisitantes() #obtiene los visitantes maximos que puede haber
+        if cantVisitantesNuevos + cantVisitantes > cantMaxVisitantes: #Si la suma de visitantes de otras reservas mas los de esta reserva es mayor a la cantidad maxima
+            return False #La capacidad se sobrepasa
         else:
-            return True
+            return True #La capacidad alcanza
