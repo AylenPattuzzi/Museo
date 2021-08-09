@@ -117,7 +117,7 @@ class Obra(models.Model):
     duracionResumida = models.DurationField() 
     fechaCreacion = models.DateField()
     fechaPrimerIngreso = models.DateField(blank=True, null=True)
-    nombreObra = models.CharField(max_length=20)
+    nombreObra = models.CharField(max_length=50)
     peso = models.FloatField(blank=True, null=True)
     valuacion = models.FloatField(blank=True, null=True) 
     cambioEstado = models.ManyToManyField(CambioEstado, blank=True) ## ---------------

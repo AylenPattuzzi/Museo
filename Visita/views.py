@@ -1,6 +1,6 @@
-from Visita.models import Exposicion, TipoVisita
+from Visita.models import Exposicion
 from django.shortcuts import render
-from .models import Estado, Sesion, Escuela, Sede, Tarifa, ReservaVisita, Empleado, AsignacionVisita
+from .models import Estado, Sesion, Escuela, Sede, Tarifa, ReservaVisita, Empleado
 from datetime import datetime, timedelta
 from django.utils.dateparse import parse_datetime
 import math
@@ -96,7 +96,7 @@ def tomarSeleccionSede(request):
 
 def buscarTipoVisita():
     nombresTipoVisita = []
-    for tarifa in Tarifa.objects.all():
+    for tarifa in Tarifa.objects.all(): #loop mientras haya tipo visitas.
         tipoVisita = tarifa.obtenerTipoVisita()
         if not tipoVisita in nombresTipoVisita:
             nombresTipoVisita.append(tipoVisita)
@@ -115,7 +115,7 @@ def tomarSeleccionTipoVisita(request):
     sede = Sede.objects.get(nombre = sedeSeleccionada)
     expTempVigentes = buscarExpTempVigentes(sede)
     
-    if tipoVisitaSeleccionada.lower() == 'por exposicion':
+    if tipoVisitaSeleccionada.lower() == 'por exposicion': #selecciona por exposicion 
 
         context = {
         'responsableLogueado': responsableLogueado,
@@ -125,10 +125,10 @@ def tomarSeleccionTipoVisita(request):
         'tipoVisitaSeleccionada': tipoVisitaSeleccionada,
         'expTempVigentes': expTempVigentes,
     }
-        return render(request, 'mostrarDatosExposicion.html',context)
-    else:
+        return render(request, 'mostrarDatosExposicion.html',context) # muestra la pantalla mostrarDatosExposicion.
+    else: #A3: Selecciona visita completa
         expoNombres=[]
-        for expo in expTempVigentes:
+        for expo in expTempVigentes:             # generar vector de nombres de exposiciones para el template
             expoNombres.append(expo.nombre)
         context = {
         'responsableLogueado': responsableLogueado,
@@ -138,7 +138,7 @@ def tomarSeleccionTipoVisita(request):
         'exposicionSeleccionada':expoNombres,
         'tipoVisitaSeleccionada': tipoVisitaSeleccionada,
     }    
-        return render(request, 'solicitarFechaHoraReserva.html',context)
+        return render(request, 'solicitarFechaHoraReserva.html',context) # muestra la pantalla solicitarFechaHoraReserva.
 
 
 def buscarExpTempVigentes(sede):
@@ -157,7 +157,7 @@ def tomarSeleccionExposicion(request, error=False):
     print(exposicionSeleccionada)
 
     msgError = ''
-    if error:
+    if error: #A5: No hay guías disponibles para asignar a la visita
         msgError = 'No hay suficientes guías disponibles para la fecha y hora seleccionada.'
 
     context = {
@@ -169,7 +169,7 @@ def tomarSeleccionExposicion(request, error=False):
         'exposicionSeleccionada':exposicionSeleccionada,
         'error':msgError
     }
-    return render(request,"solicitarFechaHoraReserva.html", context)
+    return render(request,"solicitarFechaHoraReserva.html", context)  # muestra la pantalla solicitarFechaHoraReserva.
 #---------------------------------
 
 def tomarFechaHoraReserva(request, error = False):
@@ -180,7 +180,6 @@ def tomarFechaHoraReserva(request, error = False):
     sedeSeleccionada = request.POST.get('sedeSeleccionada')
     tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
     listaExposicionesSelec = request.POST.getlist('exposicionSeleccionada[]')
-    guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
     
     # tomar datos del usuario
     fechaYHoraReserva = request.POST.get('fechaYHoraReserva')
@@ -189,14 +188,14 @@ def tomarFechaHoraReserva(request, error = False):
     # mapear objeto sede
     sede = Sede.objects.get(nombre=sedeSeleccionada)
 
-    #mapear objetos expoisicion
+    #mapear objetos exposicion
     exposicionSeleccionada = []
-    for nombreExposicion in listaExposicionesSelec:
+    for nombreExposicion in listaExposicionesSelec:    #mapear vector de nombres de exposiciones a vector de objetos            
         exposicionSeleccionada.append(Exposicion.objects.get(nombre=nombreExposicion))
 
     duracionReserva = calcularDuracionReserva(tipoVisitaSeleccionada, exposicionSeleccionada, sede)
 
-    if not verificarCapacidad(sede, cantVisitantes, fechaYHoraReservaParse):
+    if not verificarCapacidad(sede, cantVisitantes, fechaYHoraReservaParse): #A4: La capacidad máxima de visitantes por sede se sobrepasa para la duración de la visita
         context = {
             'responsableLogueado': responsableLogueado,
             'escuelaSeleccionada': escuelaSeleccionada,
@@ -208,7 +207,7 @@ def tomarFechaHoraReserva(request, error = False):
             'duracionReserva': duracionReserva,
             'error': "La sede no tiene capacidad para esa cantidad de alumnos en la fecha seleccionada.",
         }
-        return render(request,"solicitarFechaHoraReserva.html",context)
+        return render(request,"solicitarFechaHoraReserva.html",context) # muestra la pantalla solicitarFechaHoraReserva.
     dia = fechaYHoraReservaParse.weekday()
     if dia == 0:
         dia = "lunes"
@@ -230,10 +229,10 @@ def tomarFechaHoraReserva(request, error = False):
     horarioFin = (fechaYHoraReservaParse + duracionReserva).time()
     guiasDisponibles = buscarGuiasDisponibles(sede, dia, fechaYHoraReservaParse, (fechaYHoraReservaParse+duracionReserva))
     cantGuias = calcularCantGuiasNecesarios(sede, cantVisitantes)
-    if cantGuias > len(guiasDisponibles):
+    if cantGuias > len(guiasDisponibles):       #A5:No hay guías disponibles para asignar a la visita
         return tomarSeleccionExposicion(request, True)
     msgError = ''
-    if error:
+    if error:   #el usuario no selecciono la cantidad de guias indicada
         msgError = 'Seleccione la cantidad de guías exacta.'
     context = {
         'responsableLogueado': responsableLogueado,
@@ -250,7 +249,7 @@ def tomarFechaHoraReserva(request, error = False):
         'horarioFin': horarioFin,
         'error': msgError,
     }
-    return render(request,"mostrarGuiasDisponibles.html", context)
+    return render(request,"mostrarGuiasDisponibles.html", context) # muestra la pantalla mostrarGuiasDisponibles.
 
 def calcularDuracionReserva(tipoVisitaSeleccionada, exposicionSeleccionada, sede):
     duracionReserva = sede.calcularDuracionDeExposicionesSeleccionadas(tipoVisitaSeleccionada, exposicionSeleccionada)
@@ -286,7 +285,7 @@ def tomarSeleccionGuias(request):
     # tomar datos del usuario
     guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
 
-    if not len(guiasSeleccionados)== int(cantGuias):
+    if not len(guiasSeleccionados)== int(cantGuias): # el usuario no seleccionío la cantidad de guias indicada
         return tomarFechaHoraReserva(request, True)
 
 
@@ -305,7 +304,7 @@ def tomarSeleccionGuias(request):
         'horarioFin': horarioFin,
         'guiasSeleccionados': guiasSeleccionados,
     }
-    return render(request, 'solicitarConfirmacion.html', context)
+    return render(request, 'solicitarConfirmacion.html', context) # muestra la pantalla solicitarConfirmacion.
 #-------------------------------
 def tomarConfirmacion(request):
     # datos para generar una nueva reserva
@@ -328,25 +327,17 @@ def tomarConfirmacion(request):
 
     guiasSeleccionados = request.POST.getlist('guiasSeleccionados[]')
     asignacionGuia = []
-    for guia  in guiasSeleccionados:
+    for guia in guiasSeleccionados: #mapear vector de nombres "guiasSeleccionados" a vector de objetos
         guia = guia.split(", ")
         asignacionGuia.append(Empleado.objects.get(apellido=guia[0] ,nombre = guia[1]))
     
     listaExposicionesSelec = request.POST.getlist('exposicionSeleccionada[]')
     exposicionesSeleccionadas = []
-    for exposicion in listaExposicionesSelec:
+    for exposicion in listaExposicionesSelec: #mapear vector de nombres "listaExposicionesSelec" a vector de objetos
         exposicionesSeleccionadas.append(Exposicion.objects.get(nombre=exposicion))
 
-    # datos viejos que no se usan para crear la reserva (se pueden mostrar en la pantalla final)
-    horarioInicio = request.POST.get('horarioInicio')
-    horarioFin = request.POST.get('horarioFin')
-    cantGuias = request.POST.get('cantGuias')
-    tipoVisitaSeleccionada = request.POST.get('tipoVisitaSeleccionada')
-    
-    
-
-    nuevaReserva = ReservaVisita.objects.create()
-    nuevaReserva.new(
+    nuevaReserva = ReservaVisita.objects.create() # el create solo inicializa el ORM de Django, pero no instancia al objeto
+    nuevaReserva.new(            # llamamos manualmente al new para instanciar al objeto y ponerlo en memoria
         cantVisitantes,
         fechaYHoraReserva,
         numeroParaAsignar,
@@ -360,23 +351,22 @@ def tomarConfirmacion(request):
         exposicionesSeleccionadas
     )
 
-    nuevaReserva.save()
+    nuevaReserva.save() # almacena el objeto mapeado actualmente en memoria dentro de la base de datos relacional
     
 
     context = {
         'reserva': nuevaReserva,
     }
-    #return JsonResponse(serializers.serialize('json', [nuevaReserva,]), safe=False)
-    return render(request,"finCU.html", context) 
+    return render(request,"finCU.html", context) # muestra la pantalla finCU.
 
 def buscarEstadoParaAsignar():
-    for estado in Estado.objects.all():
+    for estado in Estado.objects.all():  # *esPendienteDeConfirmacion()
         if estado.esPendienteDeConfirmacion():
             return estado
 
 def buscarNumeroParaAsignar():
     maxNumeroReserva = 0
-    for reserva in ReservaVisita.objects.all():
+    for reserva in ReservaVisita.objects.all(): # *getNumeroDeReserva()
         try:
             if maxNumeroReserva < reserva.getNumeroReserva():
                 maxNumeroReserva = reserva.getNumeroReserva()
