@@ -120,8 +120,8 @@ class Obra(models.Model):
     nombreObra = models.CharField(max_length=50)
     peso = models.FloatField(blank=True, null=True)
     valuacion = models.FloatField(blank=True, null=True) 
-    cambioEstado = models.ManyToManyField(CambioEstado, blank=True) ## ---------------
-    empleado = models.ForeignKey("Empleado", on_delete=models.CASCADE, blank=True) #----------
+    cambioEstado = models.ManyToManyField(CambioEstado, blank=True)
+    empleado = models.ForeignKey("Empleado", on_delete=models.CASCADE, blank=True) 
 
     #Devuelven los atributos de duracion de la obra
     def getDuracionExtendida(self):
@@ -137,7 +137,7 @@ class DetalleExposicion(models.Model):
     #llaman a los metodos de la obra para obtener las duraciones
     def buscarDuracExtObra(self):
         return self.obra.getDuracionExtendida()
-    def buscarDuracResObra(self):#----------------------------------
+    def buscarDuracResObra(self):
         return self.obra.getDuracionResumida()
 
 class Usuario(models.Model):
@@ -338,7 +338,7 @@ class Sede(models.Model):
     cantMaxPorGuia = models.IntegerField()
     nombre = models.CharField(max_length= 20)
     exposicion = models.ManyToManyField(Exposicion)
-    tarifa = models.ManyToManyField(Tarifa) #------------------
+    tarifa = models.ManyToManyField(Tarifa) 
     def getNombre(self):
         return self.nombre
     def obtenerExpTempVigente(self):
