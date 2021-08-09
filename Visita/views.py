@@ -4,8 +4,6 @@ from .models import Estado, Sesion, Escuela, Sede, Tarifa, ReservaVisita, Emplea
 from datetime import datetime, timedelta
 from django.utils.dateparse import parse_datetime
 import math
-from django.http import HttpResponse, JsonResponse
-from django.core import serializers
 
 # Create your views here.
 def index(request):
@@ -147,7 +145,7 @@ def buscarExpTempVigentes(sede):
     expTempVigentes = sede.obtenerExpTempVigente()
     return expTempVigentes
 #--------------------------------
-def tomarSeleccionExposicion(request):
+def tomarSeleccionExposicion(request, error=False):
     # datos previos
     escuelaSeleccionada = request.POST.get('escuelaSeleccionada')
     responsableLogueado = request.POST.get('responsableLogueado')
@@ -158,6 +156,10 @@ def tomarSeleccionExposicion(request):
     exposicionSeleccionada =  request.POST.getlist('exposicionSeleccionada[]')
     print(exposicionSeleccionada)
 
+    msgError = ''
+    if error:
+        msgError = 'No hay suficientes guías disponibles para la fecha y hora seleccionada.'
+
     context = {
         'responsableLogueado': responsableLogueado,
         'escuelaSeleccionada': escuelaSeleccionada,
@@ -165,6 +167,7 @@ def tomarSeleccionExposicion(request):
         'sedeSeleccionada': sedeSeleccionada,
         'tipoVisitaSeleccionada':tipoVisitaSeleccionada,
         'exposicionSeleccionada':exposicionSeleccionada,
+        'error':msgError
     }
     return render(request,"solicitarFechaHoraReserva.html", context)
 #---------------------------------
@@ -203,7 +206,7 @@ def tomarFechaHoraReserva(request, error = False):
             'exposicionSeleccionada':listaExposicionesSelec,
             'fechaYHoraReserva':fechaYHoraReserva,
             'duracionReserva': duracionReserva,
-            'error': "La sede no tiene capacidad para esa cantidad de alumnos en la fecha seleccionada",
+            'error': "La sede no tiene capacidad para esa cantidad de alumnos en la fecha seleccionada.",
         }
         return render(request,"solicitarFechaHoraReserva.html",context)
     dia = fechaYHoraReservaParse.weekday()
@@ -227,10 +230,11 @@ def tomarFechaHoraReserva(request, error = False):
     horarioFin = (fechaYHoraReservaParse + duracionReserva).time()
     guiasDisponibles = buscarGuiasDisponibles(sede, dia, fechaYHoraReservaParse, (fechaYHoraReservaParse+duracionReserva))
     cantGuias = calcularCantGuiasNecesarios(sede, cantVisitantes)
+    if cantGuias > len(guiasDisponibles):
+        return tomarSeleccionExposicion(request, True)
     msgError = ''
-    print(guiasSeleccionados)
     if error:
-        msgError = 'Seleccione la cantidad de guías exacta'
+        msgError = 'Seleccione la cantidad de guías exacta.'
     context = {
         'responsableLogueado': responsableLogueado,
         'escuelaSeleccionada': escuelaSeleccionada,

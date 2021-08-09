@@ -1,6 +1,10 @@
 {% extends "base.html"%}
 {% block content %}
 <div class="container ">
+    <h3>Registrar Reserva de Visita Guiada</h3>
+    <h6>Ingresar cantidad de visitantes</h6>
+    <p>Paso 2 de 8</p>
+    <hr>
     <form action="../tomarCantVisitantes/" method="POST">
         {% csrf_token %}
         <!-- datos viejos -->

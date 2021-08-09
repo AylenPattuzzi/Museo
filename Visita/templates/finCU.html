@@ -1,9 +1,10 @@
 {% extends "base.html"%}
 {% block content %}
 <div class="container">
-    <div class="row exito">
-        <h3>¡Reserva creada con exito!</h3>
-    </div>
+    <h3>Registrar Reserva de Visita Guiada</h3>
+    <h6>Reserva creada con éxito</h6>
+    <p>Datos de la reserva:</p>
+    <hr>
     <div class="seleccionados-row row">
         <label for="responsableLogueado" class="label-readonly">Creado por: </label><input type="text" class="input-readonly" value="{{reserva.empleado.getNombre}}" readonly="true" name="responsableLogueado">
         <br>
@@ -44,6 +45,10 @@
             <br>
             </div>
             <div class="seleccionados-row">
+                <label for="fechaYHoraCreacion" class="bold label-readonly">Fecha y hora creación: </label><input class="input-readonly" type="text" name="fechaYHoraCreacion" readonly="true" value="{{reserva.fechaHoraCreacion}}">
+                <br>
+                </div>
+            <div class="seleccionados-row">
             <label for="duracionReserva" class="label-readonly">Duración reserva: </label><input class="input-readonly" type="text" name="duracionReserva" readonly="true" value="{{reserva.duracionEstimada}}">
             <br>
             </div>
@@ -53,7 +58,7 @@
             <br>
             </div>
             <div class="seleccionados-row">
-            <label for="numeroReserva" class="label-readonly">Id de Reserva: </label><input class="input-readonly" type="text" name="numeroReserva" readonly="true" value="{{reserva.numeroReserva}}">
+            <label for="numeroReserva" class="label-readonly">Número de Reserva: </label><input class="input-readonly" type="text" name="numeroReserva" readonly="true" value="{{reserva.numeroReserva}}">
             <br>
             </div>
             <table class="table">
@@ -75,6 +80,10 @@
     
     
 
+</div>
+
+<div class="alert alert-success" role="alert" style="position: absolute; top: 15px; right: 15px; width: calc(100% - 30px);">
+    La reserva #{{reserva.numeroReserva}} se ha registrado correctamente en el sistema.
 </div>
 
 {% endblock content %}

@@ -12,7 +12,9 @@
 </head>
 <body>
     {% block content %}{% endblock content %}
-    <p>{% if error %}{{error}}{% endif %}</p>
+    {% if error %}
+        <div class="alert alert-danger" role="alert" style="position: absolute; top: 15px; right: 15px; width: calc(100% - 30px);">{{error}}</div>
+    {% endif %}
     
     
 

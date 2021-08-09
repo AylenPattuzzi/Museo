@@ -1,8 +1,26 @@
 {% extends "base.html"%}
 {% block content %}
-<form action="../nuevaReserva/" method="POST">
-    {% csrf_token %}
-    <input type="hidden" name="sesion" value="1">
-    <input type="submit" value="Registrar Reserva de visitas guiadas">
-</form>
+<div class="container">
+    <h3>TPI PPAI Diseño 2021</h3>
+    <h5>Grupo 06</h5>
+    <hr>
+    <p><b>Integrantes:</b></p>
+    <ul>
+        <li>Arnaudo, Francisco</li>
+        <li>Baccifava, Joaquín</li>
+        <li>Basualdo, Agostina</li>
+        <li>Cuaglia, Sebastián</li>
+        <li>Drapata, Agostina</li>
+        <li>Monetto, Mariana</li>
+        <li>Pattuzzi, Aylén</li>
+    </ul>
+    <form action="../nuevaReserva/" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="sesion" value="1">
+        <div class="center">
+            <input type="submit" value="Registrar Reserva de visitas guiadas" class="btn btn-primary mb-2">
+        </div>
+    </form>
+</div>
+
 {% endblock content %}
