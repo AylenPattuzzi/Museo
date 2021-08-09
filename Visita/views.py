@@ -100,8 +100,7 @@ def buscarTipoVisita():
         tipoVisita = tarifa.obtenerTipoVisita()
         if not tipoVisita in nombresTipoVisita:
             nombresTipoVisita.append(tipoVisita)
-    return nombresTipoVisita
-
+    return nombresTipoVisita # retorna una lista con los nombres de los tipos de visita.
 #----------------------------------------
 def tomarSeleccionTipoVisita(request):
     #datos previos:

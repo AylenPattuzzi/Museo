@@ -137,7 +137,7 @@ class DetalleExposicion(models.Model):
     #llaman a los metodos de la obra para obtener las duraciones
     def buscarDuracExtObra(self):
         return self.obra.getDuracionExtendida()
-    def buscarDuracResObra(self):
+    def buscarDuracResObra(self):#----------------------------------
         return self.obra.getDuracionResumida()
 
 class Usuario(models.Model):
@@ -211,10 +211,6 @@ class Exposicion(models.Model):
                 # flujo alternativo, tipo de visita = completo, duracion resumida
                 duracion += detalleExposicion.buscarDuracResObra()
         return duracion
-
-    #Busca los guias disponibles dado un dia y horario, usando el metodo de control de asignaciones en algun horario
-    def buscarGuiasDisponibles(self, dia, horarioInicio, horarioFin):
-        return self.empleado.tieneAsignacionesEnHorario(dia, horarioInicio, horarioFin)
 
 class TipoVisita(models.Model):
     nombre = models.CharField(max_length=20)
