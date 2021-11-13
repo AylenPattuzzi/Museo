@@ -201,16 +201,20 @@ class Exposicion(models.Model):
         return self.horaCierre
 
     #Realiza una sumatoria de los tiempos de las obras de las exposiciones dependiendo el tipo de visita seleccionada
-    def calcularDuracionObrasExpuestas(self, tipoVisitaSeleccionada):
+    def calcularDuracionObrasExpuestasPorExpo(self):
         duracion = datetime.timedelta(0)
         for detalleExposicion in self.detalleExposicion.all():
-            if tipoVisitaSeleccionada.lower() == "por exposicion": # Observación 2, si es por exposicion se suman las duraciónes extendidas, si es completa las resumidas
-                # flujo básico, duración extendida
+                # flujo basico, tipo de visita = por expo, duracion completa
                 duracion += detalleExposicion.buscarDuracExtObra()
-            else:
+        return duracion
+    
+    def calcularDuracionObrasExpuestasCompleta(self):
+        duracion = datetime.timedelta(0)
+        for detalleExposicion in self.detalleExposicion.all():
                 # flujo alternativo, tipo de visita = completo, duracion resumida
                 duracion += detalleExposicion.buscarDuracResObra()
         return duracion
+    
 
 class TipoVisita(models.Model):
     nombre = models.CharField(max_length=20)
@@ -262,6 +266,7 @@ class Empleado(models.Model):
             return None # significa que no trabaja en ese horario
         
         for asignacion in AsignacionVisita.objects.all():
+            
             if asignacion.esAsignadoEnHorario(self, fechaHoraInicio, fechaHoraFin): #respeta el patron "lo hace quien conoce"
                 return True # significa que ya está asignado (ocupado)
 
@@ -349,10 +354,16 @@ class Sede(models.Model):
         return expos
 
     #Realiza la sumatoria de las obras expuestas de las exposiciones seleccionadas dada un tipo de visita seleccionado
-    def calcularDuracionDeExposicionesSeleccionadas(self, tipoVisitaSeleccionada, exposicionSeleccionada):
+    def calcularDuracionDeExposicionesSeleccionadas(self, exposicionSeleccionada):
         duracion = datetime.timedelta(0)
         for exposicion in exposicionSeleccionada:
-            duracion += exposicion.calcularDuracionObrasExpuestas(tipoVisitaSeleccionada)
+            duracion += exposicion.calcularDuracionObrasExpuestasPorExpo()
+        return duracion
+    
+    def calcularDuracionCompleta(self, exposicionSeleccionada):
+        duracion = datetime.timedelta(0)
+        for exposicion in exposicionSeleccionada:
+            duracion += exposicion.calcularDuracionObrasExpuestasCompleta()
         return duracion
 
     def getCantMaximaVisitantes(self):
@@ -387,3 +398,21 @@ class Sede(models.Model):
             return False #La capacidad se sobrepasa
         else:
             return True #La capacidad alcanza
+
+
+
+# Non persistant classes
+from interface import implements, Interface
+
+
+class IEstrategiaCalculoTiempoReserva(Interface):
+    def calcularDuracionDeExposicionesSeleccionadas(self, exposicionSeleccionada, sede):
+        pass
+
+class EstrategiaPorExposicion(implements(IEstrategiaCalculoTiempoReserva)):
+    def calcularDuracionDeExposicionesSeleccionadas(self, exposicionSeleccionada, sede):
+        return sede.calcularDuracionDeExposicionesSeleccionadas(exposicionSeleccionada)
+
+class EstrategiaCompleto(implements(IEstrategiaCalculoTiempoReserva)):
+    def calcularDuracionDeExposicionesSeleccionadas(self, exposicionSeleccionada, sede):
+        return sede.calcularDuracionCompleta(exposicionSeleccionada)

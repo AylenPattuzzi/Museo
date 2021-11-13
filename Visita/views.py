@@ -1,6 +1,6 @@
 from Visita.models import Exposicion
 from django.shortcuts import render
-from .models import Estado, Sesion, Escuela, Sede, Tarifa, ReservaVisita, Empleado
+from .models import Estado, Sesion, Escuela, Sede, Tarifa, ReservaVisita, Empleado, EstrategiaPorExposicion, EstrategiaCompleto
 from datetime import datetime, timedelta
 from django.utils.dateparse import parse_datetime
 import math
@@ -140,7 +140,7 @@ def tomarSeleccionTipoVisita(request):
         return render(request, 'solicitarFechaHoraReserva.html',context) # muestra la pantalla solicitarFechaHoraReserva.
 
 
-def buscarExpTempVigentes(sede):
+def buscarExpTempVigentes(sede): 
     expTempVigentes = sede.obtenerExpTempVigente()
     return expTempVigentes
 #--------------------------------
@@ -251,7 +251,10 @@ def tomarFechaHoraReserva(request, error = False):
     return render(request,"mostrarGuiasDisponibles.html", context) # muestra la pantalla mostrarGuiasDisponibles.
 
 def calcularDuracionReserva(tipoVisitaSeleccionada, exposicionSeleccionada, sede):
-    duracionReserva = sede.calcularDuracionDeExposicionesSeleccionadas(tipoVisitaSeleccionada, exposicionSeleccionada)
+    if tipoVisitaSeleccionada.lower() == "por exposicion":
+        duracionReserva = EstrategiaPorExposicion().calcularDuracionDeExposicionesSeleccionadas(exposicionSeleccionada, sede)
+    else:
+        duracionReserva = EstrategiaCompleto().calcularDuracionDeExposicionesSeleccionadas(exposicionSeleccionada, sede)
     return duracionReserva
 
 def verificarCapacidad(sede, cantVisitantes, fechaHora):
