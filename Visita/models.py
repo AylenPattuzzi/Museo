@@ -354,18 +354,18 @@ class Sede(models.Model):
         return expos
 
     #Realiza la sumatoria de las obras expuestas de las exposiciones seleccionadas dada un tipo de visita seleccionado
-    def calcularDuracionDeExposicionesSeleccionadas(self, exposicionSeleccionada):
-        duracion = datetime.timedelta(0)
-        for exposicion in exposicionSeleccionada:
-            duracion += exposicion.calcularDuracionObrasExpuestasPorExpo()
-        return duracion
-    
-    def calcularDuracionCompleta(self, exposicionSeleccionada):
-        duracion = datetime.timedelta(0)
-        for exposicion in exposicionSeleccionada:
-            duracion += exposicion.calcularDuracionObrasExpuestasCompleta()
-        return duracion
-
+    def crearEstrategia(self,tipoVisitaSeleccionada):
+        if tipoVisitaSeleccionada.lower() == "por exposicion":
+            estrategia = EstrategiaPorExposicion()
+        else:
+            estrategia = EstrategiaCompleto()
+        return estrategia
+        
+    def calcularDuracionDeExposicionesSeleccionadas(self,tipoVisitaSeleccionada,exposicionSeleccionada):
+        estrategia = self.crearEstrategia(tipoVisitaSeleccionada)
+        duracionReserva = estrategia.calcularDuracionDeReserva(exposicionSeleccionada)
+        return duracionReserva
+  
     def getCantMaximaVisitantes(self):
         return self.cantMaximaVisitantes 
 
@@ -406,13 +406,21 @@ from interface import implements, Interface
 
 
 class IEstrategiaCalculoTiempoReserva(Interface):
-    def calcularDuracionDeExposicionesSeleccionadas(self, exposicionSeleccionada, sede):
+    def calcularDuracionDeReserva(self, exposicionSeleccionada):
         pass
 
-class EstrategiaPorExposicion(implements(IEstrategiaCalculoTiempoReserva)):
-    def calcularDuracionDeExposicionesSeleccionadas(self, exposicionSeleccionada, sede):
-        return sede.calcularDuracionDeExposicionesSeleccionadas(exposicionSeleccionada)
-
 class EstrategiaCompleto(implements(IEstrategiaCalculoTiempoReserva)):
-    def calcularDuracionDeExposicionesSeleccionadas(self, exposicionSeleccionada, sede):
-        return sede.calcularDuracionCompleta(exposicionSeleccionada)
+    def calcularDuracionDeReserva(self, exposicionSeleccionada):
+        duracion = datetime.timedelta(0)
+        for exposicion in exposicionSeleccionada:
+            duracion += exposicion.calcularDuracionObrasExpuestasCompleta()
+        return duracion
+class EstrategiaPorExposicion(implements(IEstrategiaCalculoTiempoReserva)):
+    def calcularDuracionDeReserva(self, exposicionSeleccionada):
+        duracion = datetime.timedelta(0)
+        for exposicion in exposicionSeleccionada:
+            duracion += exposicion.calcularDuracionObrasExpuestasPorExpo()
+        return duracion
+
+
+        

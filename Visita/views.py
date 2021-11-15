@@ -250,12 +250,15 @@ def tomarFechaHoraReserva(request, error = False):
     }
     return render(request,"mostrarGuiasDisponibles.html", context) # muestra la pantalla mostrarGuiasDisponibles.
 
-def calcularDuracionReserva(tipoVisitaSeleccionada, exposicionSeleccionada, sede):
-    if tipoVisitaSeleccionada.lower() == "por exposicion":
-        duracionReserva = EstrategiaPorExposicion().calcularDuracionDeExposicionesSeleccionadas(exposicionSeleccionada, sede)
-    else:
-        duracionReserva = EstrategiaCompleto().calcularDuracionDeExposicionesSeleccionadas(exposicionSeleccionada, sede)
-    return duracionReserva
+def calcularDuracionReserva(tipoVisitaSeleccionada ,exposicionSeleccionada , sede):
+    return sede.calcularDuracionDeExposicionesSeleccionadas(tipoVisitaSeleccionada,exposicionSeleccionada)
+
+# def crearEstrategia(tipoVisitaSeleccionada):
+#     if tipoVisitaSeleccionada.lower() == "por exposicion":
+#         estrategia = EstrategiaPorExposicion()
+#     else:
+#         estrategia = EstrategiaCompleto()
+#     return estrategia
 
 def verificarCapacidad(sede, cantVisitantes, fechaHora):
     tieneCapacidad = sede.verificarCapacidad(cantVisitantes, fechaHora)
